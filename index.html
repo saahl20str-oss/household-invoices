@@ -8,19 +8,29 @@
 <style>
 :root{--g:#C9A84C;--t:#222;--m:#777;--l:#e8e8e8}
 *{box-sizing:border-box}body{margin:0;background:#fff;color:var(--t);font-family:Cairo,Tahoma,Arial,sans-serif}
-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:2px solid var(--g)}
+header{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;border-bottom:2px solid var(--g);background:#fff;position:sticky;top:0;z-index:5}
+header button{padding:7px 11px;font-size:13px;margin:0}
 main{max-width:760px;margin:auto;padding:14px}
-.card{border:1px solid var(--l);border-radius:12px;padding:14px;margin:10px 0;border-inline-start:6px solid var(--c,var(--g))}
+.card{border:1px solid var(--l);border-radius:12px;padding:14px;margin:10px 0;background:#fff;border-inline-start:6px solid var(--c,var(--g))}
 .r{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .m{color:var(--m);font-size:14px;margin:4px 0}.n{background:#fff6e0;border-radius:8px;padding:8px;margin:6px 0}
-input,select{width:100%;padding:12px;margin:5px 0;border:1px solid #ccc;border-radius:10px;font:inherit}
-button{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid var(--g);cursor:pointer;margin:3px 0}
-.b{background:var(--g);color:#fff;width:100%;font-weight:700}.g{background:#fff;color:var(--t)}.x{border-color:#c0392b;color:#c0392b;background:#fff}
+input,select{width:100%;padding:12px;margin:5px 0;border:1px solid #ccc;border-radius:10px;font:inherit;background:#fff}
+button{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid var(--g);cursor:pointer;margin:3px 0;background:#fff;color:var(--t)}
+.b{background:var(--g);color:#fff;width:100%;font-weight:700}.x{border-color:#c0392b;color:#c0392b}
 .s{padding:3px 10px;border-radius:20px;font-size:13px;color:#fff;background:#999}.s.approved{background:#2E7D6B}.s.paid{background:#1b5e20}.s.revision{background:#c0392b}.s.pending{background:#d99a00}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid .card{margin:0;text-align:center}.big{font-size:20px;font-weight:700}
-.ok{background:#e6f4ea;color:#1b5e20;border-radius:8px;padding:6px 10px;font-size:14px}
+.ok{background:#e6f4ea;color:#1b5e20;border-radius:8px;padding:4px 10px;font-size:14px}
+.tab{flex:1;border-color:var(--l)}.tab.on{background:var(--g);color:#fff;border-color:var(--g)}
+.toast{position:fixed;bottom:20px;inset-inline:16px;background:var(--g);color:#fff;padding:12px;border-radius:12px;text-align:center;z-index:20;font-weight:700}
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:9}#ov img{max-width:96%;max-height:92%}
 .prev{max-width:100%;max-height:200px;border-radius:8px}
+.hero{position:relative;min-height:calc(100vh - 58px);overflow:hidden}
+.hero svg{position:absolute;inset:0;width:100%;height:100%;filter:blur(4px);transform:scale(1.04)}
+.hero .tx{position:relative;max-width:480px;margin:auto;padding:60px 16px;text-align:center}
+.hero h1{font-size:30px;margin:0 0 8px}.hero p{color:#444;margin:0 0 18px}
+.rc{animation:rc 7s linear infinite;transform-box:fill-box}.gl{animation:gl 3s ease-in-out infinite alternate}.hs{animation:hv 6s ease-in-out infinite alternate}
+@keyframes rc{0%{transform:translate(0,0);opacity:0}15%,85%{opacity:.95}100%{transform:translate(var(--dx),var(--dy));opacity:0}}
+@keyframes gl{from{opacity:.3}to{opacity:1}}@keyframes hv{from{transform:translateY(0)}to{transform:translateY(-8px)}}
 </style>
 </head>
 <body>
@@ -30,43 +40,62 @@ button{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid var(--
 const SB_URL='https://naareclascgwdjlopjru.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hYXJlY2xhc2Nnd2RqbG9wanJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4NzUwNTcsImV4cCI6MjEwNjQ1MTA1N30.K2vN0d-ZnuuS_hofWKXrU7zh5WTnPY0eMnQBrfzgZ7M';
 const sb=supabase.createClient(SB_URL,SB_KEY);
-const T={ar:{app:'فواتير المنزل',email:'البريد الإلكتروني',pass:'كلمة المرور',login:'تسجيل الدخول',signup:'إنشاء حساب جديد',logout:'خروج',confirm:'تم إنشاء الحساب. أكّد بريدك الإلكتروني ثم سجّل الدخول.',
-workers:'العاملات',addw:'إضافة عاملة',name:'الاسم',phone:'الهاتف (اختياري)',note:'ملاحظات (اختياري)',save:'حفظ',month:'الشهر',total:'إجمالي المشتريات',paid:'المدفوع',due:'المستحق للعاملات',pend:'بانتظار المراجعة',
-count:'عدد الفواتير',left:'المتبقي',det:'التفاصيل',pay:'تسجيل دفع',link:'نسخ الرابط',renew:'تجديد الرابط',stop:'إيقاف',resume:'تفعيل',del:'حذف',appr:'اعتماد',rev:'طلب تعديل',img:'الصورة',store:'المحل',amount:'المبلغ',date:'التاريخ',
-src:'طريقة الدفع',own:'من مالي الخاص',advance:'من العُهدة',owner:'دفعها صاحب البيت',s_pending:'بانتظار المراجعة',s_approved:'مقبولة',s_revision:'تحتاج تعديلًا',s_paid:'مدفوعة',
-addinv:'إضافة فاتورة',reading:'جارٍ قراءة المبلغ...',manual:'أدخل البيانات يدويًا',badlink:'الرابط غير صالح أو موقوف. اطلبي رابطًا جديدًا.',dup:'تبدو هذه الفاتورة مكررة. هل تريد حفظها؟',cur:'درهم',settled:'تمت التصفية',
-copied:'تم نسخ الرابط. أرسله للعاملة.',edit:'تعديل',onote:'ملاحظتك',method:'طريقة الدفع (نقدًا/تحويل)',noinv:'لا توجد فواتير',newinv:'فاتورة جديدة',back:'رجوع',delq:'حذف العاملة؟',share:'رابط الموقع لأصحاب البيوت الآخرين',sharet:'انسخ رابط هذه الصفحة وأرسله لأي صاحب بيت ليسجّل حسابه ببياناته المنفصلة.'},
-en:{app:'Household Invoices',email:'Email',pass:'Password',login:'Log in',signup:'Create account',logout:'Log out',confirm:'Account created. Confirm your email, then log in.',
-workers:'Workers',addw:'Add worker',name:'Name',phone:'Phone (optional)',note:'Notes (optional)',save:'Save',month:'Month',total:'Total purchases',paid:'Paid',due:'Due to workers',pend:'Awaiting review',
-count:'Invoices',left:'Remaining',det:'Details',pay:'Record payment',link:'Copy link',renew:'Renew link',stop:'Suspend',resume:'Activate',del:'Delete',appr:'Approve',rev:'Request edit',img:'Image',store:'Store',amount:'Amount',date:'Date',
-src:'Paid with',own:'My own money',advance:'From advance',owner:'Paid by the owner',s_pending:'Awaiting review',s_approved:'Approved',s_revision:'Needs edit',s_paid:'Paid',
-addinv:'Add invoice',reading:'Reading the amount...',manual:'Enter the details manually',badlink:'This link is invalid or suspended. Ask for a new one.',dup:'This invoice looks like a duplicate. Save anyway?',cur:'AED',settled:'Settled',
-copied:'Link copied. Send it to the worker.',edit:'Edit',onote:'Your note',method:'Method (cash/transfer)',noinv:'No invoices',newinv:'New invoice',back:'Back',delq:'Delete this worker?',share:'Site link for other homeowners',sharet:'Copy this page link and send it to any homeowner; each one signs up with fully separate data.'}};
-let L=localStorage.lang||'ar';const t=k=>T[L][k]||k;const $=s=>document.querySelector(s);
+const T={app:['فواتير المنزل','Household Invoices'],ownerAcc:['حساب المالك','Owner'],helperAcc:['حساب المساعدة','Helper'],logout:['خروج','Log out'],
+h1:['فواتير المنزل بلا تعقيد','Household bills, made simple'],h2:['المساعدة تصوّر الفاتورة، وأنت تراجعها، وتُصفّى الحسابات بوضوح.','The helper snaps the receipt, you review it, and accounts settle clearly.'],start:['ابدأ كمالك','Start as owner'],
+login:['تسجيل الدخول','Log in'],signup:['إنشاء حساب للمنزل','Create home account'],email:['البريد الإلكتروني','Email'],pass:['كلمة المرور','Password'],homename:['اسم المنزل (اختياري)','Home name (optional)'],confirm:['تم إنشاء الحساب. أكّد بريدك ثم سجّل الدخول.','Account created. Confirm your email, then log in.'],
+hcode:['الصق رابط المساعدة أو رمزها','Paste the helper link or code'],open:['فتح','Open'],nohelp:['لا يوجد حساب مساعدة بهذا الرابط. يجب أن ينشئ المالك حساب المنزل ويضيفها أولًا.','No helper account found. The owner must create the home account and add her first.'],
+tInv:['الفواتير','Invoices'],tHelp:['المساعدات','Helpers'],addh:['إضافة مساعدة','Add helper'],sett:['الإعدادات','Settings'],back:['رجوع','Back'],
+name:['الاسم','Name'],phone:['الهاتف (اختياري)','Phone (optional)'],note:['ملاحظات (اختياري)','Notes (optional)'],save:['حفظ','Save'],
+total:['إجمالي المشتريات','Total purchases'],paid:['المدفوع','Paid'],due:['المستحق للمساعدات','Due to helpers'],pend:['بانتظار المراجعة','Awaiting review'],
+count:['عدد الفواتير','Invoices'],left:['المتبقي','Remaining'],pay:['تسجيل دفع','Record payment'],link:['نسخ رابط المساعدة','Copy helper link'],renew:['تجديد الرابط','Renew link'],stop:['إيقاف','Suspend'],resume:['تفعيل','Activate'],del:['حذف','Delete'],appr:['اعتماد','Approve'],rev:['طلب تعديل','Request edit'],img:['الصورة','Image'],
+store:['المحل','Store'],amount:['المبلغ','Amount'],date:['التاريخ','Date'],own:['من مالها الخاص','Her own money'],advance:['من العُهدة','From advance'],owner:['دفعها صاحب البيت','Paid by the owner'],
+s_pending:['بانتظار المراجعة','Awaiting review'],s_approved:['مقبولة','Approved'],s_revision:['تحتاج تعديلًا','Needs edit'],s_paid:['مدفوعة','Paid'],all:['الكل','All'],
+addinv:['إضافة فاتورة','Add invoice'],reading:['جارٍ قراءة المبلغ...','Reading the amount...'],manual:['أدخل البيانات يدويًا','Enter the details manually'],badlink:['الرابط غير صالح أو موقوف.','Invalid or suspended link.'],dup:['تبدو هذه الفاتورة مكررة. هل تريد حفظها؟','Looks like a duplicate. Save anyway?'],
+cur:['درهم','AED'],settled:['تمت التصفية','Settled'],copied:['تم نسخ الرابط. أرسله للمساعدة.','Link copied. Send it to the helper.'],edit:['تعديل','Edit'],onote:['ملاحظتك','Your note'],noinv:['لا توجد فواتير','No invoices'],newinv:['فاتورة جديدة','New invoice'],
+delq:['حذف المساعدة وجميع فواتيرها ودفعاتها نهائيًا؟','Permanently delete this helper with all her invoices and payments?'],
+sName:['اسم المنزل','Home name'],sSettle:['تصفية حساب الشهر','Settle this month'],sSettleD:['يسجّل دفع المتبقي لكل مساعدة ويغلق فواتيرها المقبولة.','Pays each helper her remaining amount and closes her approved invoices.'],sSettleQ:['تأكيد تصفية حساب الشهر لكل المساعدات؟','Settle this month for all helpers?'],
+sCsv:['تصدير كشف الشهر (Excel)','Export month statement (Excel)'],sPw:['تغيير كلمة المرور','Change password'],sPw2:['كلمة مرور جديدة (6 أحرف على الأقل)','New password (min 6 chars)'],sReset:['إرسال رابط إعادة تعيين كلمة المرور إلى بريدي','Email me a password reset link'],done:['تم','Done'],
+newbn:['فواتير جديدة بانتظار مراجعتك','New invoices awaiting your review'],over:['المبلغ أكبر من المتبقي','Amount exceeds the remaining'],payq:['المبلغ الذي تدفعه للمساعدة (دفعة منك وليست فاتورة)','Amount you pay the helper (a payment, not an invoice)'],method:['طريقة الدفع (نقدًا/تحويل)','Method (cash/transfer)']};
+let L=localStorage.lang||'ar';const t=k=>(T[k]||[k,k])[L=='ar'?0:1];const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Number(n).toFixed(2)+' '+t('cur');const sum=a=>a.reduce((x,y)=>x+Number(y),0);
 const rt=()=>[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
-const COL=['#C9A84C','#2E7D6B','#B5523B','#3F6BB5','#8A4FA3','#5C7A29'];
-const today=()=>new Date().toISOString().slice(0,10);
-function setLang(l){L=l;localStorage.lang=l;document.documentElement.lang=l;document.documentElement.dir=l=='ar'?'rtl':'ltr';route()}
-function render(h,out){$('#app').innerHTML=`<header><b>${t('app')}</b><span><button class=g onclick="setLang(L=='ar'?'en':'ar')">${L=='ar'?'EN':'عربي'}</button>${out?`<button class=g onclick="logout()">${t('logout')}</button>`:''}</span></header><main>${h}</main>`}
-function route(){const w=new URLSearchParams(location.search).get('w');w?worker(w):owner()}
+const COL=['#C9A84C','#2E7D6B','#B5523B','#3F6BB5','#8A4FA3','#5C7A29'];const today=()=>new Date().toISOString().slice(0,10);
+const S={month:today().slice(0,7),tab:'inv',v:'dash',open:null,fs:'',fw:'',pn:{},in:false};const W={};
+const toast=m=>{const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),6000)};
+const once=async f=>{if(S.busy)return;S.busy=1;try{await f()}finally{S.busy=0}};
+function setLang(l){L=l;localStorage.lang=l;document.documentElement.lang=l;document.documentElement.dir=l=='ar'?'rtl':'ltr';S.re?S.re():route()}
+const hdr=()=>`<header><b>${t('app')}</b><span><button onclick="goOwner()">${t('ownerAcc')}</button> <button onclick="goHelper()">${t('helperAcc')}</button> <button onclick="setLang(L=='ar'?'en':'ar')">${L=='ar'?'EN':'عربي'}</button>${S.in?` <button onclick="logout()">${t('logout')}</button>`:''}</span></header>`;
+const page=h=>{$('#app').innerHTML=hdr()+h};
+const SVG=`<svg viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbf3dc"/><stop offset="1" stop-color="#fff"/></linearGradient></defs><rect width="400" height="700" fill="url(#sk)"/>
+<g class="hs"><polygon points="70,430 200,320 330,430" fill="#b8923a"/><rect x="90" y="430" width="220" height="170" fill="#e9dcc0"/><rect x="178" y="500" width="44" height="100" rx="4" fill="#8a6d2b"/><rect x="112" y="460" width="48" height="44" fill="#C9A84C" class="gl"/><rect x="240" y="460" width="48" height="44" fill="#C9A84C" class="gl" style="animation-delay:1.5s"/></g>
+<g transform="translate(20,590)"><g class="rc" style="--dx:170px;--dy:-60px"><rect width="34" height="48" rx="4" fill="#fff" stroke="#C9A84C"/><path d="M7 14h20M7 24h20M7 34h12" stroke="#C9A84C"/></g></g>
+<g transform="translate(340,260)"><g class="rc" style="--dx:-140px;--dy:210px;animation-delay:2.3s"><rect width="34" height="48" rx="4" fill="#fff" stroke="#C9A84C"/><path d="M7 14h20M7 24h20M7 34h12" stroke="#C9A84C"/></g></g>
+<g transform="translate(50,180)"><g class="rc" style="--dx:140px;--dy:270px;animation-delay:4.6s"><rect width="34" height="48" rx="4" fill="#fff" stroke="#C9A84C"/><path d="M7 14h20M7 24h20M7 34h12" stroke="#C9A84C"/></g></g></svg>`;
+const shell=i=>page(`<div class="hero">${SVG}<div class="tx"><div class="card" style="text-align:start;background:#fffe">${i}</div></div></div>`);
+function landing(){S.re=landing;page(`<div class="hero">${SVG}<div class="tx" style="padding-top:120px"><h1>${t('h1')}</h1><p>${t('h2')}</p><button class="b" onclick="loginView()">${t('start')}</button></div></div>`)}
+async function route(){const w=new URLSearchParams(location.search).get('w');const{data:{session}}=await sb.auth.getSession();S.in=!!session;
+ if(w)return worker(w);session?owner():landing()}
+function goOwner(){if(location.search)return location.href=location.pathname;S.in?owner():loginView()}
+function goHelper(){const w=new URLSearchParams(location.search).get('w')||localStorage.hw;w?worker(w):helperEntry()}
+function helperEntry(m){S.re=()=>helperEntry(m);shell(`<h3>${t('helperAcc')}</h3>${m?`<div class="n">${esc(m)}</div>`:''}<input id="hc" placeholder="${t('hcode')}"><button class="b" onclick="hopen()">${t('open')}</button>`)}
+function hopen(){const k=($('#hc').value.match(/[0-9a-f]{32}/i)||[])[0];k?worker(k.toLowerCase()):helperEntry(t('nohelp'))}
 
-/* ---------- Worker (private link, no login) ---------- */
-const W={};
-async function worker(tok){W.tok=tok;const{data}=await sb.rpc('hh_worker_info',{p_token:tok});
- if(!data)return render(`<div class=card>${t('badlink')}</div>`);W.d=data;
- render(`<h2>${esc(data.worker)}</h2><div class=card><button class=b onclick="$('#f').click()">${t('addinv')}</button>
- <input id=f type=file accept="image/*" hidden onchange="pick(this)"><div id=form></div></div>
- ${data.invoices.map(i=>`<div class=card><div class=r><b>${money(i.amount)}</b><span class="s ${i.status}">${t('s_'+i.status)}</span></div>
- <div class=m>${esc(i.store||'')} · ${i.inv_date} · ${t(i.pay_source)}</div>${i.owner_note?`<div class=n>${esc(i.owner_note)}</div>`:''}
- ${i.status=='revision'||i.status=='pending'?`<button class=g onclick="edit('${i.id}')">${t('edit')}</button>`:''}</div>`).join('')||`<p class=m>${t('noinv')}</p>`}`)}
+/* ---------- Helper (private link) ---------- */
+async function worker(tok){W.tok=tok;S.re=()=>worker(tok);const{data}=await sb.rpc('hh_worker_info',{p_token:tok});
+ if(!data){localStorage.removeItem('hw');return helperEntry(t('nohelp'))}
+ W.d=data;localStorage.hw=tok;
+ page(`<main><h2>${esc(data.worker)}</h2><div class="card"><button class="b" onclick="$('#f').click()">${t('addinv')}</button>
+ <input id="f" type="file" accept="image/*" hidden onchange="pick(this)"><div id="form"></div></div>
+ ${data.invoices.map(i=>`<div class="card"><div class="r"><b>${money(i.amount)}</b><span class="s ${i.status}">${t('s_'+i.status)}</span></div>
+ <div class="m">${esc(i.store||'')} · ${i.inv_date} · ${t(i.pay_source)}</div>${i.owner_note?`<div class="n">${esc(i.owner_note)}</div>`:''}
+ ${i.status=='revision'||i.status=='pending'?`<button onclick="edit('${i.id}')">${t('edit')}</button>`:''}</div>`).join('')||`<p class="m">${t('noinv')}</p>`}</main>`)}
 function comp(f){return new Promise(r=>{const im=new Image();im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.7))};im.src=URL.createObjectURL(f)})}
 async function pick(inp){const f=inp.files[0];if(!f)return;W.edit=null;W.img=await comp(f);form({});ocr()}
-function form(v){$('#form').innerHTML=`${W.img?`<img class=prev src="${W.img}">`:''}<div class=m id=ocr></div>
- <input id=am type=number step=0.01 inputmode=decimal placeholder="${t('amount')}" value="${v.amount||''}"><input id=st placeholder="${t('store')}" value="${esc(v.store||'')}">
- <input id=dt type=date value="${v.inv_date||today()}"><select id=src>${['own','advance','owner'].map(s=>`<option value=${s} ${v.pay_source==s?'selected':''}>${t(s)}</option>`).join('')}</select>
- <button class=b onclick="submit()">${t('save')}</button>`}
+function form(v){$('#form').innerHTML=`${W.img?`<img class="prev" src="${W.img}">`:''}<div class="m" id="ocr"></div>
+ <input id="am" type="number" step="0.01" inputmode="decimal" placeholder="${t('amount')}" value="${v.amount||''}"><input id="st" placeholder="${t('store')}" value="${esc(v.store||'')}">
+ <input id="dt" type="date" value="${v.inv_date||today()}"><select id="src">${['own','advance','owner'].map(s=>`<option value="${s}" ${v.pay_source==s?'selected':''}>${t(s)}</option>`).join('')}</select>
+ <button class="b" onclick="submit()">${t('save')}</button>`}
 async function ocr(){const st=$('#ocr');try{st.textContent=t('reading');
  if(!window.Tesseract)await new Promise((a,b)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js';s.onload=a;s.onerror=b;document.head.appendChild(s)});
  const{data:{text}}=await Tesseract.recognize(W.img,'eng');
@@ -81,57 +110,78 @@ async function submit(force){if(W.busy)return;const am=+$('#am').value;if(!(am>0
  W.img=null;W.edit=null;worker(W.tok)}
 
 /* ---------- Owner ---------- */
-const S={month:today().slice(0,7),open:null};
-async function owner(){const{data:{session}}=await sb.auth.getSession();if(!session)return login();
- const{data,error}=await sb.rpc('hh_ensure_home',{p_name:null});if(error)return alert(error.message);S.home=data;dash()}
-function login(){render(`<div class=card><h2>${t('login')}</h2><input id=e type=email placeholder="${t('email')}"><input id=p type=password placeholder="${t('pass')}">
- <button class=b onclick="auth(0)">${t('login')}</button><button class=g style="width:100%" onclick="auth(1)">${t('signup')}</button></div>`)}
-async function auth(su){const c={email:$('#e').value.trim(),password:$('#p').value};
+function loginView(){S.re=loginView;shell(`<h3>${t('ownerAcc')}</h3><input id="e" type="email" placeholder="${t('email')}"><input id="p" type="password" placeholder="${t('pass')}">
+ <button class="b" onclick="auth(0)">${t('login')}</button><hr><input id="hn" placeholder="${t('homename')}"><button style="width:100%" onclick="auth(1)">${t('signup')}</button>`)}
+async function auth(su){const c={email:$('#e').value.trim(),password:$('#p').value};const hn=$('#hn').value.trim();if(su&&hn)localStorage.hn=hn;
  const{data,error}=su?await sb.auth.signUp(c):await sb.auth.signInWithPassword(c);if(error)return alert(error.message);
- if(su&&!data.session)return alert(t('confirm'));owner()}
-async function logout(){await sb.auth.signOut();login()}
-function nm(m){const d=new Date(m+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+1);return d.toISOString().slice(0,10)}
+ if(su&&!data.session)return alert(t('confirm'));S.in=true;owner()}
+async function logout(){await sb.auth.signOut();S.in=false;S.home=null;S.lp=null;if(location.search)location.href=location.pathname;else landing()}
+async function owner(){const{data,error}=await sb.rpc('hh_ensure_home',{p_name:localStorage.hn||null});if(error)return loginView();
+ S.home=data;S.in=true;localStorage.removeItem('hn');S.v=S.rec?'set':'dash';S.rec=0;dash()}
+sb.auth.onAuthStateChange(ev=>{if(ev=='PASSWORD_RECOVERY')S.rec=1});
+const nm=m=>{const d=new Date(m+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+1);return d.toISOString().slice(0,10)};
 function calc(w){const inv=S.inv.filter(i=>i.worker_id==w);const due=sum(inv.filter(i=>i.pay_source=='own'&&['approved','paid'].includes(i.status)).map(i=>i.amount));
  const paid=sum(S.pay.filter(p=>p.worker_id==w).map(p=>p.amount));return{inv,due,paid,left:Math.max(0,due-paid),tot:sum(inv.map(i=>i.amount))}}
 async function dash(){S.start=S.month+'-01';S.end=nm(S.month);
- const[w,i,p,n]=await Promise.all([sb.from('hh_workers').select('*').order('created_at'),
+ const[w,i,p,n,h]=await Promise.all([sb.from('hh_workers').select('*').order('created_at'),
  sb.from('hh_invoices').select('id,worker_id,store,amount,inv_date,pay_source,status,owner_note').gte('inv_date',S.start).lt('inv_date',S.end).order('inv_date',{ascending:false}),
- sb.from('hh_payments').select('*').eq('month',S.month),
- sb.from('hh_invoices').select('worker_id').eq('status','pending')]);
- S.w=w.data||[];S.inv=i.data||[];S.pay=p.data||[];S.pn={};(n.data||[]).forEach(r=>S.pn[r.worker_id]=(S.pn[r.worker_id]||0)+1);
- S.open?detail():list()}
-const mi=()=>`<input type=month value="${S.month}" onchange="S.month=this.value;dash()">`;
-const sm=cs=>`<div class=grid><div class=card><div class=m>${t('total')}</div><div class=big>${money(sum(S.inv.map(x=>x.amount)))}</div></div>
- <div class=card><div class=m>${t('paid')}</div><div class=big>${money(sum(S.pay.map(x=>x.amount)))}</div></div>
- <div class=card><div class=m>${t('due')}</div><div class=big>${money(sum(cs.map(c=>c.left)))}</div></div>
- <div class=card><div class=m>${t('pend')}</div><div class=big>${sum(Object.values(S.pn))}</div></div></div>`;
-function list(){const cs=S.w.map(x=>calc(x.id));const base=location.origin+location.pathname;
- render(`${mi()}${sm(cs)}<h3>${t('workers')}</h3>${S.w.map((x,n)=>{const c=cs[n],p=S.pn[x.id]||0;
- return`<div class="card r" style="--c:${COL[n%6]};cursor:pointer" onclick="S.open='${x.id}';dash();scrollTo(0,0)"><b>${esc(x.name)}${x.active?'':' ('+t('stop')+')'}</b>
- <span>${p?`<span class="s pending">${t('newinv')} (${p})</span>`:''}${c.due>0&&c.left<=0?` <span class=ok>${t('settled')}</span>`:''}</span></div>`}).join('')}
- <div class=card><h3>${t('addw')}</h3><input id=wn placeholder="${t('name')}"><input id=wp placeholder="${t('phone')}"><input id=wo placeholder="${t('note')}"><button class=b onclick="addw()">${t('save')}</button></div>
- <div class=card><b>${t('share')}</b><p class=m>${t('sharet')}</p><button class=g onclick="cp('${base}')">${t('link')}</button></div>`,1)}
-function detail(){const n=S.w.findIndex(x=>x.id==S.open),x=S.w[n];if(!x){S.open=null;return list()}
+ sb.from('hh_payments').select('*').eq('month',S.month),sb.from('hh_invoices').select('worker_id').eq('status','pending'),sb.from('hh_homes').select('name').limit(1)]);
+ S.w=w.data||[];S.inv=i.data||[];S.pay=p.data||[];S.hname=(h.data&&h.data[0]&&h.data[0].name)||'';S.pn={};(n.data||[]).forEach(r=>S.pn[r.worker_id]=(S.pn[r.worker_id]||0)+1);
+ const P=sum(Object.values(S.pn));if(S.lp!=null&&P>S.lp)toast(t('newbn'));S.lp=P;view()}
+function view(){S.re=view;({dash:list,detail,add:addv,set:setv})[S.v]()}
+const mi=()=>`<input type="month" value="${S.month}" onchange="S.month=this.value;dash()">`;
+const sm=cs=>`<div class="grid"><div class="card"><div class="m">${t('total')}</div><div class="big">${money(sum(S.inv.map(x=>x.amount)))}</div></div>
+ <div class="card"><div class="m">${t('paid')}</div><div class="big">${money(sum(S.pay.map(x=>x.amount)))}</div></div>
+ <div class="card"><div class="m">${t('due')}</div><div class="big">${money(sum(cs.map(c=>c.left)))}</div></div>
+ <div class="card"><div class="m">${t('pend')}</div><div class="big">${sum(Object.values(S.pn))}</div></div></div>`;
+const back=()=>`<button onclick="S.v='dash';view()">${L=='ar'?'→':'←'} ${t('back')}</button>`;
+const invCard=(i,sn)=>{const n=S.w.findIndex(x=>x.id==i.worker_id);return`<div class="card" style="--c:${COL[Math.max(n,0)%6]}"><div class="r"><b>${money(i.amount)}</b><span class="s ${i.status}">${t('s_'+i.status)}</span></div>
+ <div class="m">${sn&&S.w[n]?`<b>${esc(S.w[n].name)}</b> · `:''}${esc(i.store||'')} · ${i.inv_date} · ${t(i.pay_source)}</div>${i.owner_note?`<div class="n">${esc(i.owner_note)}</div>`:''}
+ <button onclick="show('${i.id}')">${t('img')}</button>${i.status=='pending'?`<button onclick="rv('${i.id}','approved')">${t('appr')}</button><button onclick="rv('${i.id}','revision')">${t('rev')}</button>`:''}</div>`};
+function list(){const cs=S.w.map(x=>calc(x.id)),P=sum(Object.values(S.pn));
+ const f=S.inv.filter(i=>(!S.fw||i.worker_id==S.fw)&&(!S.fs||i.status==S.fs));
+ const body=S.tab=='inv'?`<div class="grid"><select onchange="S.fw=this.value;view()"><option value="">${t('tHelp')}: ${t('all')}</option>${S.w.map(x=>`<option value="${x.id}" ${S.fw==x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>
+ <select onchange="S.fs=this.value;view()"><option value="">${t('all')}</option>${['pending','approved','revision','paid'].map(s=>`<option value="${s}" ${S.fs==s?'selected':''}>${t('s_'+s)}</option>`).join('')}</select></div>${f.map(i=>invCard(i,1)).join('')||`<p class="m">${t('noinv')}</p>`}`
+ :S.w.map((x,n)=>{const c=cs[n],p=S.pn[x.id]||0;return`<div class="card r" style="--c:${COL[n%6]};cursor:pointer" onclick="S.open='${x.id}';S.v='detail';view();scrollTo(0,0)"><b>${esc(x.name)}${x.active?'':' ('+t('stop')+')'}</b>
+ <span>${p?`<span class="s pending">${t('newinv')} (${p})</span>`:''}${c.due>0&&c.left<=0?` <span class="ok">${t('settled')}</span>`:''}</span></div>`}).join('');
+ page(`<main><div class="r"><h3 style="margin:6px 0">${esc(S.hname||t('app'))}</h3><span><button class="b" style="width:auto" onclick="S.v='add';view()">${t('addh')}</button> <button onclick="S.v='set';view()">${t('sett')}</button></span></div>
+ ${P?`<div class="n">${t('newbn')} (${P})</div>`:''}${mi()}${sm(cs)}
+ <div class="r" style="margin:10px 0"><button class="tab ${S.tab=='inv'?'on':''}" onclick="S.tab='inv';view()">${t('tInv')}</button><button class="tab ${S.tab=='help'?'on':''}" onclick="S.tab='help';view()">${t('tHelp')}${P?` (${P})`:''}</button></div>${body}</main>`)}
+function detail(){const n=S.w.findIndex(x=>x.id==S.open),x=S.w[n];if(!x){S.v='dash';return list()}
  const c=calc(x.id),base=location.origin+location.pathname;
- render(`<button class=g onclick="S.open=null;dash()">${L=='ar'?'→':'←'} ${t('back')}</button>${mi()}
- <div class=card style="--c:${COL[n%6]}"><div class=r><b>${esc(x.name)}</b>${c.due>0&&c.left<=0?`<span class=ok>${t('settled')}</span>`:''}</div>
- <div class=m>${x.phone?esc(x.phone)+' · ':''}${t('count')}: ${c.inv.length} · ${t('total')}: ${money(c.tot)} · ${t('left')}: ${money(c.left)}</div>${x.note?`<div class=m>${esc(x.note)}</div>`:''}
- <button class=g onclick="pay('${x.id}')">${t('pay')}</button><button class=g onclick="cp('${base}?w=${x.token}')">${t('link')}</button><button class=g onclick="renew('${x.id}')">${t('renew')}</button>
- <button class=g onclick="tog('${x.id}',${!x.active})">${x.active?t('stop'):t('resume')}</button><button class=x onclick="delw('${x.id}')">${t('del')}</button></div>
- ${c.inv.map(i=>`<div class=card style="--c:${COL[n%6]}"><div class=r><b>${money(i.amount)}</b><span class="s ${i.status}">${t('s_'+i.status)}</span></div><div class=m>${esc(i.store||'')} · ${i.inv_date} · ${t(i.pay_source)}</div>${i.owner_note?`<div class=n>${esc(i.owner_note)}</div>`:''}
- <button class=g onclick="show('${i.id}')">${t('img')}</button>${i.status=='pending'||i.status=='revision'?`<button class=g onclick="rv('${i.id}','approved')">${t('appr')}</button><button class=g onclick="rv('${i.id}','revision')">${t('rev')}</button>`:''}</div>`).join('')||`<p class=m>${t('noinv')}</p>`}`,1)}
-setInterval(()=>{if(S.home&&!S.busy&&!/INPUT|SELECT/.test(document.activeElement.tagName))dash()},30000);
-const once=async f=>{if(S.busy)return;S.busy=1;try{await f()}finally{S.busy=0}};
+ page(`<main>${back()}${mi()}<div class="card" style="--c:${COL[n%6]}"><div class="r"><b>${esc(x.name)}</b>${c.due>0&&c.left<=0?`<span class="ok">${t('settled')}</span>`:''}</div>
+ <div class="m">${x.phone?esc(x.phone)+' · ':''}${t('count')}: ${c.inv.length} · ${t('total')}: ${money(c.tot)} · ${t('left')}: ${money(c.left)}</div>${x.note?`<div class="m">${esc(x.note)}</div>`:''}
+ <button onclick="pay('${x.id}')">${t('pay')}</button> <button onclick="cp('${base}?w=${x.token}')">${t('link')}</button> <button onclick="renew('${x.id}')">${t('renew')}</button>
+ <button onclick="tog('${x.id}',${!x.active})">${x.active?t('stop'):t('resume')}</button> <button class="x" onclick="delw('${x.id}')">${t('del')}</button></div>
+ ${c.inv.map(i=>invCard(i,0)).join('')||`<p class="m">${t('noinv')}</p>`}</main>`)}
+function addv(){page(`<main>${back()}<div class="card"><h3>${t('addh')}</h3><input id="wn" placeholder="${t('name')}"><input id="wp" placeholder="${t('phone')}"><input id="wo" placeholder="${t('note')}"><button class="b" onclick="addw()">${t('save')}</button></div></main>`)}
+function setv(){page(`<main>${back()}<h3>${t('sett')}</h3>
+ <div class="card"><b>${t('sName')}</b><input id="hn2" value="${esc(S.hname)}"><button onclick="savehn()">${t('save')}</button></div>
+ <div class="card"><b>${t('sSettle')}</b> (${S.month})<p class="m">${t('sSettleD')}</p><button class="b" onclick="settle()">${t('sSettle')}</button></div>
+ <div class="card"><button style="width:100%" onclick="csv()">${t('sCsv')}</button></div>
+ <div class="card"><b>${t('sPw')}</b><input id="np" type="password" placeholder="${t('sPw2')}"><button class="b" onclick="chpw()">${t('sPw')}</button><button style="width:100%" onclick="reset()">${t('sReset')}</button></div>
+ <div class="card"><button class="x" style="width:100%" onclick="logout()">${t('logout')}</button></div></main>`)}
 const cp=async u=>{try{await navigator.clipboard.writeText(u)}catch(e){prompt('',u)}alert(t('copied'))};
-const addw=()=>once(async()=>{const n=$('#wn').value.trim();if(!n)return;const{error}=await sb.from('hh_workers').insert({home_id:S.home,name:n,phone:$('#wp').value,note:$('#wo').value,token:rt()});if(error)return alert(error.message);dash()});
+const addw=()=>once(async()=>{const n=$('#wn').value.trim();if(!n)return;const{error}=await sb.from('hh_workers').insert({home_id:S.home,name:n,phone:$('#wp').value,note:$('#wo').value,token:rt()});if(error)return alert(error.message);S.v='dash';S.tab='help';await dash()});
 const renew=id=>once(async()=>{await sb.from('hh_workers').update({token:rt()}).eq('id',id);dash()});
 const tog=(id,a)=>once(async()=>{await sb.from('hh_workers').update({active:a}).eq('id',id);dash()});
-const delw=id=>once(async()=>{if(!confirm(t('delq')))return;const{error}=await sb.from('hh_workers').delete().eq('id',id);if(error)alert('Has financial records / لها سجل مالي');else S.open=null;dash()});
+const delw=id=>once(async()=>{if(!confirm(t('delq')))return;await sb.from('hh_payments').delete().eq('worker_id',id);await sb.from('hh_invoices').delete().eq('worker_id',id);
+ const{error}=await sb.from('hh_workers').delete().eq('id',id);if(error)return alert(error.message);S.open=null;S.v='dash';S.tab='help';dash()});
 const rv=(id,s)=>once(async()=>{let n=null;if(s=='revision'){n=prompt(t('onote'));if(n===null)return}await sb.from('hh_invoices').update({status:s,owner_note:n}).eq('id',id);dash()});
 async function show(id){const{data}=await sb.from('hh_invoices').select('image').eq('id',id).single();if(!data||!data.image)return;$('#oi').src=data.image;$('#ov').style.display='flex'}
-const pay=wid=>once(async()=>{const r=calc(wid).left;const a=+prompt(t('amount'),r.toFixed(2));if(!(a>0))return;const mt=prompt(t('method'),'')||'';
- const{error}=await sb.from('hh_payments').insert({home_id:S.home,worker_id:wid,month:S.month,amount:a,method:mt,paid_at:today()});if(error)return alert(error.message);
+const pay=wid=>once(async()=>{const r=calc(wid).left;if(r<=0)return alert(t('settled'));const a=+prompt(t('payq')+' — '+t('left')+': '+r.toFixed(2),r.toFixed(2));if(!(a>0))return;if(a>r+0.005)return alert(t('over'));
+ const mt=prompt(t('method'),'')||'';const{error}=await sb.from('hh_payments').insert({home_id:S.home,worker_id:wid,month:S.month,amount:a,method:mt,paid_at:today()});if(error)return alert(error.message);
  if(a>=r-0.005)await sb.from('hh_invoices').update({status:'paid'}).eq('worker_id',wid).eq('status','approved').eq('pay_source','own').gte('inv_date',S.start).lt('inv_date',S.end);dash()});
+const settle=()=>once(async()=>{if(!confirm(t('sSettleQ')))return;const rows=S.w.map(x=>({x,c:calc(x.id)})).filter(r=>r.c.left>0.005);
+ if(rows.length){const{error}=await sb.from('hh_payments').insert(rows.map(r=>({home_id:S.home,worker_id:r.x.id,month:S.month,amount:r.c.left,method:'settlement',paid_at:today()})));if(error)return alert(error.message)}
+ await sb.from('hh_invoices').update({status:'paid'}).eq('status','approved').eq('pay_source','own').gte('inv_date',S.start).lt('inv_date',S.end);alert(t('done'));dash()});
+const savehn=()=>once(async()=>{const v=$('#hn2').value.trim();await sb.from('hh_homes').update({name:v}).eq('id',S.home);S.hname=v;alert(t('done'))});
+const chpw=()=>once(async()=>{const p=$('#np').value;if(p.length<6)return alert(t('sPw2'));const{error}=await sb.auth.updateUser({password:p});alert(error?error.message:t('done'))});
+const reset=()=>once(async()=>{const{data:{user}}=await sb.auth.getUser();const{error}=await sb.auth.resetPasswordForEmail(user.email,{redirectTo:location.origin+location.pathname});alert(error?error.message:t('done'))});
+function csv(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',wn=id=>(S.w.find(x=>x.id==id)||{}).name||'';
+ const rows=[['Helper','Date','Store','Amount','Paid with','Status'],...S.inv.map(i=>[wn(i.worker_id),i.inv_date,i.store,i.amount,i.pay_source,i.status]),[],['Payments','Date','Method','Amount'],...S.pay.map(p=>[wn(p.worker_id),p.paid_at,p.method,p.amount])];
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}));a.download='statement-'+S.month+'.csv';a.click()}
+setInterval(()=>{if(S.home&&S.in&&['dash','detail'].includes(S.v)&&!S.busy&&!/INPUT|SELECT/.test(document.activeElement.tagName))dash()},30000);
 document.documentElement.dir=L=='ar'?'rtl':'ltr';document.documentElement.lang=L;route();
 </script>
 </body>
