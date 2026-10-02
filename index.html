@@ -62,7 +62,7 @@ s_pending:['بانتظار المراجعة','Awaiting review'],s_approved:['م�
 addinv:['إضافة فاتورة','Add invoice'],reading:['جارٍ قراءة المبلغ...','Reading the amount...'],manual:['أدخل البيانات يدويًا','Enter the details manually'],badlink:['الرابط غير صالح أو موقوف.','Invalid or suspended link.'],dup:['تبدو هذه الفاتورة مكررة. هل تريد حفظها؟','Looks like a duplicate. Save anyway?'],
 cur:['درهم','AED'],settled:['تمت التصفية','Settled'],copied:['تم نسخ الرابط. أرسله للمساعدة.','Link copied. Send it to the helper.'],edit:['تعديل','Edit'],onote:['ملاحظتك','Your note'],noinv:['لا توجد فواتير','No invoices'],newinv:['فاتورة جديدة','New invoice'],
 delq:['حذف المساعدة وجميع فواتيرها ودفعاتها نهائيًا؟','Permanently delete this helper with all her invoices and payments?'],
-sName:['اسم المنزل','Home name'],sSettle:['تصفية حساب الشهر','Settle this month'],sSettleD:['يسجّل دفع المتبقي لكل مساعدة ويغلق فواتيرها المقبولة.','Pays each helper her remaining amount and closes her approved invoices.'],sSettleQ:['تأكيد تصفية حساب الشهر لكل المساعدات؟','Settle this month for all helpers?'],
+sName:['اسم المنزل','Home name'],sSettle:['تصفية حساب الشهر','Settle this month'],sSettleD:['يسجّل دفع المتبقي لكل مساعدة، ويصفّر اللوحة، ويحفظ السجل في الأرشيف.','Pays each helper her remaining amount, resets the dashboard and keeps the records in the Archive.'],sSettleQ:['تأكيد تصفية الحساب؟ ستُصفَّر اللوحة ويُحفظ السجل في الأرشيف.','Settle the account? The dashboard resets and records are kept in the Archive.'],
 sCsv:['تصدير كشف الشهر (Excel)','Export month statement (Excel)'],sPw:['تغيير كلمة المرور','Change password'],sPw2:['كلمة مرور جديدة (6 أحرف على الأقل)','New password (min 6 chars)'],sReset:['إرسال رابط إعادة تعيين كلمة المرور إلى بريدي','Email me a password reset link'],done:['تم','Done'],
 newbn:['فواتير جديدة بانتظار مراجعتك','New invoices awaiting your review'],over:['المبلغ أكبر من المتبقي','Amount exceeds the remaining'],payq:['المبلغ الذي تدفعه للمساعدة (دفعة منك وليست فاتورة)','Amount you pay the helper (a payment, not an invoice)'],method:['طريقة الدفع (نقدًا/تحويل)','Method (cash/transfer)'],
 hint:['إن لم يكن لديك رابط، اطلبي من المالك رابط التسجيل.','No link yet? Ask the owner for the registration link.'],joinT:['تسجيل مساعدة جديدة','Helper registration'],joinTo:['الانضمام إلى منزل','Joining home'],reg:['تسجيل','Register'],
@@ -70,7 +70,8 @@ wait:['تم استلام طلبك. بانتظار تفعيل المالك لحس
 joinD:['أرسله للمساعدة لتسجّل بياناتها بنفسها، ثم فعّل حسابها من القائمة.','Send it so the helper registers herself, then activate her from the list.'],inact:['غير مفعّلة','Inactive'],inactN:['مساعدات بانتظار التفعيل','Helpers awaiting activation'],badcode:['رابط التسجيل غير صالح.','Invalid registration link.'],
 nothing:['لا يوجد مبلغ مستحق للتصفية في هذا الشهر.','Nothing due to settle this month.'],delinv:['حذف هذه الفاتورة نهائيًا؟','Delete this invoice permanently?'],noimg:['لا توجد صورة لهذه الفاتورة.','This invoice has no image.'],
 renewJ:['تجديد رابط التسجيل (يُبطل القديم)','Renew registration link (invalidates the old one)'],renewJq:['تجديد رابط التسجيل؟ الرابط القديم سيتوقف.','Renew the registration link? The old one will stop working.'],
-e_many:['وصلت للحد الأقصى. انتظري مراجعة المالك.','Limit reached. Please wait for the owner to review.'],e_date:['التاريخ غير صحيح.','Invalid date.'],e_amt:['المبلغ غير صحيح.','Invalid amount.']};
+e_many:['وصلت للحد الأقصى. انتظري مراجعة المالك.','Limit reached. Please wait for the owner to review.'],e_date:['التاريخ غير صحيح.','Invalid date.'],e_amt:['المبلغ غير صحيح.','Invalid amount.'],
+tArc:['الأرشيف','Archive'],settleW:['تصفية حساب المساعدة','Settle helper account'],arcNote:['السجل محفوظ في الأرشيف.','Records are kept in the Archive.'],arcOn:['تصفية بتاريخ','Settled on'],noarc:['لا يوجد أرشيف لهذا الشهر.','No archive for this month.']};
 let L=localStorage.lang||'ar';const t=k=>(T[k]||[k,k])[L=='ar'?0:1];const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Number(n).toFixed(2)+' '+t('cur');const sum=a=>a.reduce((x,y)=>x+Number(y),0);
@@ -140,11 +141,13 @@ function calc(w){const inv=S.inv.filter(i=>i.worker_id==w);const due=sum(inv.fil
  const paid=sum(S.pay.filter(p=>p.worker_id==w).map(p=>p.amount));return{inv,due,paid,left:Math.max(0,due-paid),tot:sum(inv.map(i=>i.amount))}}
 async function dash(){try{await dash0()}catch(e){page(`<main><div class="n">${esc(e.message||e)}</div><button class="b" onclick="dash()">${t('refresh')}</button></main>`)}}
 async function dash0(){S.start=S.month+'-01';S.end=nm(S.month);
- const[w,i,p,n,h]=await Promise.all([sb.from('hh_workers').select('*').order('created_at'),
- sb.from('hh_invoices').select('id,worker_id,store,amount,inv_date,pay_source,status,owner_note').gte('inv_date',S.start).lt('inv_date',S.end).order('inv_date',{ascending:false}),
- sb.from('hh_payments').select('*').eq('month',S.month),sb.from('hh_invoices').select('worker_id,inv_date').eq('status','pending'),sb.from('hh_homes').select('name,join_code').limit(1)]);
+ const[w,i,p,n,h,ai,ap]=await Promise.all([sb.from('hh_workers').select('*').order('created_at'),
+ sb.from('hh_invoices').select('id,worker_id,store,amount,inv_date,pay_source,status,owner_note').is('closed_at',null).gte('inv_date',S.start).lt('inv_date',S.end).order('inv_date',{ascending:false}),
+ sb.from('hh_payments').select('*').eq('month',S.month).is('closed_at',null),sb.from('hh_invoices').select('worker_id,inv_date').eq('status','pending'),sb.from('hh_homes').select('name,join_code').limit(1),
+ S.tab=='arc'?sb.from('hh_invoices').select('id,worker_id,store,amount,inv_date,pay_source,status,owner_note,closed_at').not('closed_at','is',null).gte('inv_date',S.start).lt('inv_date',S.end).order('closed_at',{ascending:false}):null,
+ S.tab=='arc'?sb.from('hh_payments').select('*').eq('month',S.month).not('closed_at','is',null):null]);
  const er=[w,i,p,n].find(r=>r.error);if(er)throw new Error(er.error.message);
- S.w=w.data||[];S.inv=i.data||[];S.pay=p.data||[];const H=(h.data&&h.data[0])||{};S.hname=H.name||'';S.join=H.join_code||'';S.pn={};(n.data||[]).forEach(r=>S.pn[r.worker_id]=(S.pn[r.worker_id]||0)+1);S.pm=((n.data||[]).map(r=>r.inv_date).sort().pop()||'').slice(0,7);
+ S.w=w.data||[];S.ai=(ai&&ai.data)||[];S.ap=(ap&&ap.data)||[];S.inv=i.data||[];S.pay=p.data||[];const H=(h.data&&h.data[0])||{};S.hname=H.name||'';S.join=H.join_code||'';S.pn={};(n.data||[]).forEach(r=>S.pn[r.worker_id]=(S.pn[r.worker_id]||0)+1);S.pm=((n.data||[]).map(r=>r.inv_date).sort().pop()||'').slice(0,7);
  const P=sum(Object.values(S.pn));if(S.lp!=null&&P>S.lp)toast(t('newbn'));S.lp=P;view()}
 function view(){S.re=view;({dash:list,detail,add:addv,set:setv})[S.v]()}
 const mi=()=>`<input type="month" value="${S.month}" onchange="S.month=this.value;dash()">`;
@@ -155,22 +158,22 @@ const sm=cs=>`<div class="grid"><div class="card"><div class="m">${t('total')}</
 const back=()=>`<button onclick="S.v='dash';view()">${L=='ar'?'→':'←'} ${t('back')}</button>`;
 const invCard=(i,sn)=>{const n=S.w.findIndex(x=>x.id==i.worker_id);return`<div class="card" style="--c:${COL[Math.max(n,0)%6]}"><div class="r"><b>${money(i.amount)}</b><span class="s ${i.status}">${t('s_'+i.status)}</span></div>
  <div class="m">${sn&&S.w[n]?`<b>${esc(S.w[n].name)}</b> · `:''}${esc(i.store||'')} · ${i.inv_date} · ${t(i.pay_source)}</div>${i.owner_note?`<div class="n">${esc(i.owner_note)}</div>`:''}
- <button onclick="show('${i.id}')">${t('img')}</button>${i.status=='pending'?`<button onclick="rv('${i.id}','approved')">${t('appr')}</button><button onclick="rv('${i.id}','revision')">${t('rev')}</button>`:''}${i.status!='paid'?`<button class="x" onclick="deli('${i.id}')">${t('del')}</button>`:''}</div>`};
+ <button onclick="show('${i.id}')">${t('img')}</button>${i.status=='pending'?`<button onclick="rv('${i.id}','approved')">${t('appr')}</button><button onclick="rv('${i.id}','revision')">${t('rev')}</button>`:''}${i.status!='paid'&&!i.closed_at?`<button class="x" onclick="deli('${i.id}')">${t('del')}</button>`:''}</div>`};
 function list(){const cs=S.w.map(x=>calc(x.id)),P=sum(Object.values(S.pn)),IN=S.w.filter(x=>!x.active).length,
  jc=S.join?`<div class="card"><p class="m">${t('joinD')}</p><button style="width:100%" onclick="cp('${location.origin+location.pathname}?j=${S.join}')">${t('joinLink')}</button></div>`:'';
  const f=S.inv.filter(i=>(!S.fw||i.worker_id==S.fw)&&(!S.fs||i.status==S.fs));
  const body=S.tab=='inv'?`<div class="grid"><select onchange="S.fw=this.value;view()"><option value="">${t('tHelp')}: ${t('all')}</option>${S.w.map(x=>`<option value="${x.id}" ${S.fw==x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>
  <select onchange="S.fs=this.value;view()"><option value="">${t('all')}</option>${['pending','approved','revision','paid'].map(s=>`<option value="${s}" ${S.fs==s?'selected':''}>${t('s_'+s)}</option>`).join('')}</select></div>${f.map(i=>invCard(i,1)).join('')||`<p class="m">${t('noinv')}</p>`}`
- :jc+S.w.map((x,n)=>{const c=cs[n],p=S.pn[x.id]||0;return`<div class="card r" style="--c:${COL[n%6]};cursor:pointer;position:relative" onclick="S.open='${x.id}';S.v='detail';view();scrollTo(0,0)"><b>${esc(x.name)}</b>
- <span>${x.active?'':`<span class="s">${t('inact')}</span> `}${p?`<span class="s pending">${t('newinv')} (${p})</span>`:''}${c.due>0&&c.left<=0?` <span class="ok">${t('settled')}</span>`:''}</span><span class="kb" aria-label="menu" onclick="event.stopPropagation();km('${x.id}')">&#8942;</span><div class="menu" id="m${x.id}" onclick="event.stopPropagation()"><button onclick="cpw('${x.id}')">${t('link')}</button><button onclick="renew('${x.id}')">${t('renew')}</button><button onclick="tog('${x.id}',${!x.active})">${x.active?t('stop'):t('resume')}</button><button onclick="pay('${x.id}')">${t('pay')}</button><button class="x" onclick="delw('${x.id}')">${t('del')}</button></div></div>`}).join('');
+ :S.tab=='arc'?arcView():jc+S.w.map((x,n)=>{const c=cs[n],p=S.pn[x.id]||0;return`<div class="card r" style="--c:${COL[n%6]};cursor:pointer;position:relative" onclick="S.open='${x.id}';S.v='detail';view();scrollTo(0,0)"><b>${esc(x.name)}</b>
+ <span>${x.active?'':`<span class="s">${t('inact')}</span> `}${p?`<span class="s pending">${t('newinv')} (${p})</span>`:''}${c.due>0&&c.left<=0?` <span class="ok">${t('settled')}</span>`:''}</span><span class="kb" aria-label="menu" onclick="event.stopPropagation();km('${x.id}')">&#8942;</span><div class="menu" id="m${x.id}" onclick="event.stopPropagation()"><button onclick="cpw('${x.id}')">${t('link')}</button><button onclick="renew('${x.id}')">${t('renew')}</button><button onclick="tog('${x.id}',${!x.active})">${x.active?t('stop'):t('resume')}</button><button onclick="pay('${x.id}')">${t('pay')}</button><button onclick="settle(['${x.id}'])">${t('settleW')}</button><button class="x" onclick="delw('${x.id}')">${t('del')}</button></div></div>`}).join('');
  page(`<main><div class="r"><h3 style="margin:6px 0">${esc(S.hname||t('app'))}</h3><span><button class="b" style="width:auto" onclick="S.v='add';view()">${t('addh')}</button> <button onclick="S.v='set';view()">${t('sett')}</button></span></div>
  ${P?`<div class="n" style="cursor:pointer" onclick="goPend()">${t('newbn')} (${P})</div>`:''}${IN?`<div class="n">${t('inactN')} (${IN})</div>`:''}${mi()}${sm(cs)}
- <div class="r" style="margin:10px 0"><button class="tab ${S.tab=='inv'?'on':''}" onclick="S.tab='inv';view()">${t('tInv')}</button><button class="tab ${S.tab=='help'?'on':''}" onclick="S.tab='help';view()">${t('tHelp')}${P?` (${P})`:''}</button></div>${body}</main>`)}
+ <div class="r" style="margin:10px 0"><button class="tab ${S.tab=='inv'?'on':''}" onclick="S.tab='inv';view()">${t('tInv')}</button><button class="tab ${S.tab=='help'?'on':''}" onclick="S.tab='help';view()">${t('tHelp')}${P?` (${P})`:''}</button><button class="tab ${S.tab=='arc'?'on':''}" onclick="S.tab='arc';dash()">${t('tArc')}</button></div>${body}</main>`)}
 function detail(){const n=S.w.findIndex(x=>x.id==S.open),x=S.w[n];if(!x){S.v='dash';return list()}
  const c=calc(x.id),base=location.origin+location.pathname;
  page(`<main>${back()}${mi()}<div class="card" style="--c:${COL[n%6]}"><div class="r"><b>${esc(x.name)}</b>${c.due>0&&c.left<=0?`<span class="ok">${t('settled')}</span>`:''}</div>
  <div class="m">${x.phone?esc(x.phone)+' · ':''}${t('count')}: ${c.inv.length} · ${t('total')}: ${money(c.tot)} · ${t('left')}: ${money(c.left)}</div>${x.note?`<div class="m">${esc(x.note)}</div>`:''}
- <button onclick="pay('${x.id}')">${t('pay')}</button> <button onclick="cp('${base}?w=${x.token}')">${t('link')}</button> <button onclick="renew('${x.id}')">${t('renew')}</button>
+ <button onclick="pay('${x.id}')">${t('pay')}</button> <button onclick="settle(['${x.id}'])">${t('settleW')}</button> <button onclick="cp('${base}?w=${x.token}')">${t('link')}</button> <button onclick="renew('${x.id}')">${t('renew')}</button>
  <button onclick="tog('${x.id}',${!x.active})">${x.active?t('stop'):t('resume')}</button> <button class="x" onclick="delw('${x.id}')">${t('del')}</button></div>
  ${c.inv.map(i=>invCard(i,0)).join('')||`<p class="m">${t('noinv')}</p>`}</main>`)}
 function addv(){page(`<main>${back()}<div class="card"><h3>${t('addh')}</h3><input id="wn" placeholder="${t('name')}"><input id="wp" placeholder="${t('phone')}"><input id="wo" placeholder="${t('note')}"><button class="b" onclick="addw()">${t('save')}</button></div></main>`)}
@@ -192,17 +195,26 @@ async function show(id){const{data}=await sb.from('hh_invoices').select('image')
 const pay=wid=>once(async()=>{const r=calc(wid).left;if(r<=0)return alert(t('settled'));const a=+prompt(t('payq')+' — '+t('left')+': '+r.toFixed(2),r.toFixed(2));if(!(a>0))return;if(a>r+0.005)return alert(t('over'));
  const mt=prompt(t('method'),'')||'';const{error}=await sb.from('hh_payments').insert({home_id:S.home,worker_id:wid,month:S.month,amount:a,method:mt,paid_at:today()});if(error)return alert(error.message);
  if(a>=r-0.005)await sb.from('hh_invoices').update({status:'paid'}).eq('worker_id',wid).eq('status','approved').eq('pay_source','own').gte('inv_date',S.start).lt('inv_date',S.end);dash()});
-const settle=()=>once(async()=>{const rows=S.w.map(x=>({x,c:calc(x.id)})).filter(r=>r.c.left>0.005);if(!rows.length)return alert(t('nothing'));const tot=sum(rows.map(r=>r.c.left));
- if(!confirm(t('sSettleQ')+'\n'+rows.map(r=>r.x.name+': '+money(r.c.left)).join('\n')+'\n'+t('total')+': '+money(tot)))return;
- let e=(await sb.from('hh_payments').insert(rows.map(r=>({home_id:S.home,worker_id:r.x.id,month:S.month,amount:r.c.left,method:'settlement',paid_at:today()})))).error;if(e)return alert(e.message);
- e=(await sb.from('hh_invoices').update({status:'paid'}).eq('status','approved').eq('pay_source','own').gte('inv_date',S.start).lt('inv_date',S.end)).error;if(e)return alert(e.message);
- alert(t('done')+': '+money(tot));S.v='dash';S.tab='help';dash()});
+const settle=ids=>once(async()=>{const ws=ids||S.w.map(x=>x.id);const rows=ws.map(id=>({x:S.w.find(w=>w.id==id),c:calc(id)})).filter(r=>r.x&&r.c.left>0.005);
+ const closable=S.inv.filter(i=>ws.includes(i.worker_id)&&['approved','paid'].includes(i.status));
+ if(!rows.length&&!closable.length)return alert(t('nothing'));const tot=sum(rows.map(r=>r.c.left));
+ if(!confirm(t('sSettleQ')+'\n'+rows.map(r=>r.x.name+': '+money(r.c.left)).join('\n')+'\n'+t('due')+': '+money(tot)))return;
+ const now=new Date().toISOString();
+ if(rows.length){const e0=(await sb.from('hh_payments').insert(rows.map(r=>({home_id:S.home,worker_id:r.x.id,month:S.month,amount:r.c.left,method:'settlement',paid_at:today()})))).error;if(e0)return alert(e0.message)}
+ const f=q=>q.in('worker_id',ws).gte('inv_date',S.start).lt('inv_date',S.end).is('closed_at',null);
+ let e=(await f(sb.from('hh_invoices').update({status:'paid'}).eq('status','approved').eq('pay_source','own'))).error;if(e)return alert(e.message);
+ e=(await f(sb.from('hh_invoices').update({closed_at:now}).in('status',['approved','paid']))).error;if(e)return alert(e.message);
+ e=(await sb.from('hh_payments').update({closed_at:now}).in('worker_id',ws).eq('month',S.month).is('closed_at',null)).error;if(e)return alert(e.message);
+ alert(t('done')+' — '+t('arcNote'));S.v='dash';S.tab='inv';dash()});
+function arcView(){const g={},k0=x=>new Date(x).toLocaleDateString(L=='ar'?'ar-AE':'en-GB'),G=k=>g[k]=g[k]||{i:[],p:[]};
+ S.ai.forEach(i=>G(k0(i.closed_at)).i.push(i));S.ap.forEach(p=>G(k0(p.closed_at)).p.push(p));const ks=Object.keys(g);
+ return`<button style="width:100%" onclick="csv(1)">${t('sCsv')}</button>`+(ks.map(k=>`<div class="card"><b>${t('arcOn')} ${k}</b><div class="m">${t('total')}: ${money(sum(g[k].i.map(x=>x.amount)))} · ${t('paid')}: ${money(sum(g[k].p.map(x=>x.amount)))}</div></div>${g[k].i.map(i=>invCard(i,1)).join('')}`).join('')||`<p class="m">${t('noarc')}</p>`)}
 const savehn=()=>once(async()=>{const v=$('#hn2').value.trim();await sb.from('hh_homes').update({name:v}).eq('id',S.home);S.hname=v;alert(t('done'))});
 const chpw=()=>once(async()=>{const p=$('#np').value;if(p.length<6)return alert(t('sPw2'));const{error}=await sb.auth.updateUser({password:p});alert(error?error.message:t('done'))});
 const reset=()=>once(async()=>{const{data:{user}}=await sb.auth.getUser();const{error}=await sb.auth.resetPasswordForEmail(user.email,{redirectTo:location.origin+location.pathname});alert(error?error.message:t('done'))});
-function csv(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',wn=id=>(S.w.find(x=>x.id==id)||{}).name||'';
- const rows=[['Helper','Date','Store','Amount','Paid with','Status'],...S.inv.map(i=>[wn(i.worker_id),i.inv_date,i.store,i.amount,i.pay_source,i.status]),[],['Payments','Date','Method','Amount'],...S.pay.map(p=>[wn(p.worker_id),p.paid_at,p.method,p.amount])];
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}));a.download='statement-'+S.month+'.csv';a.click()}
+function csv(arc){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',wn=id=>(S.w.find(x=>x.id==id)||{}).name||'';
+ const rows=[['Helper','Date','Store','Amount','Paid with','Status'],...(arc?S.ai:S.inv).map(i=>[wn(i.worker_id),i.inv_date,i.store,i.amount,i.pay_source,i.status]),[],['Payments','Date','Method','Amount'],...(arc?S.ap:S.pay).map(p=>[wn(p.worker_id),p.paid_at,p.method,p.amount])];
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}));a.download=(arc?'archive-':'statement-')+S.month+'.csv';a.click()}
 const em=m=>/too_many/.test(m)?t('e_many'):/bad_date/.test(m)?t('e_date'):/bad_amount/.test(m)?t('e_amt'):/bad_code/.test(m)?t('badcode'):m;
 const km=id=>{const m=document.getElementById('m'+id),on=m.classList.contains('on');document.querySelectorAll('.menu.on').forEach(e=>e.classList.remove('on'));if(!on)m.classList.add('on')};
 document.addEventListener('click',()=>document.querySelectorAll('.menu.on').forEach(e=>e.classList.remove('on')));
