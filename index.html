@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>فواتير المنزل | Household Invoices</title>
+<meta name="theme-color" content="#5f7050"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--g:#5f7050;--t:#2b2d26;--m:#6b6e5e;--l:#e4dcc5}
@@ -36,6 +37,9 @@ header.tr button{background:rgba(255,255,255,.65);color:#3d4a33;border-color:#5f
 .hb.o{background:rgba(255,255,255,.6);border:1px solid #5f7050;color:#3d4a33;backdrop-filter:blur(4px)}
 .lt{animation:lt 4s ease-in-out infinite alternate}.sh{animation:sh 5s ease-in-out infinite alternate}.cl{animation:cl 60s linear infinite alternate}.tw{animation:lt 3s ease-in-out infinite alternate}
 @keyframes lt{from{opacity:.78}to{opacity:1}}@keyframes sh{from{transform:translateX(-10px)}to{transform:translateX(12px)}}@keyframes cl{to{transform:translateX(150px)}}@keyframes kb{from{transform:scale(1)}to{transform:scale(1.07)}}
+.kb{padding:2px 12px;font-size:24px;line-height:1;cursor:pointer;color:#3d4a33}
+.menu{position:absolute;inset-inline-end:8px;top:46px;background:#fffdf8;border:1px solid #d6cdb2;border-radius:12px;box-shadow:0 6px 18px rgba(60,50,20,.2);z-index:8;min-width:190px;padding:6px;display:none}
+.menu.on{display:block}.menu button{display:block;width:100%;text-align:start;border:0;margin:0;padding:10px 12px}
 </style>
 </head>
 <body>
@@ -48,7 +52,7 @@ const sb=supabase.createClient(SB_URL,SB_KEY);
 const T={app:['فواتير المنزل','Household Invoices'],ownerAcc:['حساب المالك','Owner'],helperAcc:['حساب المساعدة المنزلية','Home Helper Account'],logout:['خروج','Log out'],
 h2:['سجّل مشتريات المساعدة المنزلية، راجعها، وصفِّ الحساب في مكان واحد.','Record, review and settle your household purchases in one place.'],
 login:['تسجيل الدخول','Log in'],signup:['إنشاء حساب للمنزل','Create home account'],email:['البريد الإلكتروني','Email'],pass:['كلمة المرور','Password'],homename:['اسم المنزل (اختياري)','Home name (optional)'],confirm:['تم إنشاء الحساب. أكّد بريدك ثم سجّل الدخول.','Account created. Confirm your email, then log in.'],
-hcode:['الصق رابط المساعدة أو رمزها','Paste the helper link or code'],open:['فتح','Open'],nohelp:['لا يوجد حساب مساعدة بهذا الرابط. يجب أن ينشئ المالك حساب المنزل ويضيفها أولًا.','No helper account found. The owner must create the home account and add her first.'],
+hcode:['الصق رابط المساعدة أو رمزها','Paste the helper link or code'],open:['فتح','Open'],nohelp:['لا يوجد حساب مساعدة بهذا الرابط. تأكد أنه رابط المساعدة نفسه (وليس رابط التسجيل)، وأن المالك أضافها.','No helper account for this link. Make sure it is the helper link (not the registration link) and that the owner added her.'],
 tInv:['الفواتير','Invoices'],tHelp:['المساعدات','Helpers'],addh:['إضافة مساعدة','Add helper'],sett:['الإعدادات','Settings'],back:['رجوع','Back'],
 name:['الاسم','Name'],phone:['الهاتف (اختياري)','Phone (optional)'],note:['ملاحظات (اختياري)','Notes (optional)'],save:['حفظ','Save'],
 total:['إجمالي المشتريات','Total purchases'],paid:['المدفوع','Paid'],due:['المستحق للمساعدات','Due to helpers'],pend:['بانتظار المراجعة','Awaiting review'],
@@ -63,12 +67,15 @@ sCsv:['تصدير كشف الشهر (Excel)','Export month statement (Excel)'],s
 newbn:['فواتير جديدة بانتظار مراجعتك','New invoices awaiting your review'],over:['المبلغ أكبر من المتبقي','Amount exceeds the remaining'],payq:['المبلغ الذي تدفعه للمساعدة (دفعة منك وليست فاتورة)','Amount you pay the helper (a payment, not an invoice)'],method:['طريقة الدفع (نقدًا/تحويل)','Method (cash/transfer)'],
 hint:['إن لم يكن لديك رابط، اطلبي من المالك رابط التسجيل.','No link yet? Ask the owner for the registration link.'],joinT:['تسجيل مساعدة جديدة','Helper registration'],joinTo:['الانضمام إلى منزل','Joining home'],reg:['تسجيل','Register'],
 wait:['تم استلام طلبك. بانتظار تفعيل المالك لحسابك.','Request received. Waiting for the owner to activate your account.'],refresh:['تحديث','Refresh'],joinLink:['نسخ رابط تسجيل المساعدة','Copy helper registration link'],
-joinD:['أرسله للمساعدة لتسجّل بياناتها بنفسها، ثم فعّل حسابها من القائمة.','Send it so the helper registers herself, then activate her from the list.'],inact:['غير مفعّلة','Inactive'],inactN:['مساعدات بانتظار التفعيل','Helpers awaiting activation'],badcode:['رابط التسجيل غير صالح.','Invalid registration link.']};
+joinD:['أرسله للمساعدة لتسجّل بياناتها بنفسها، ثم فعّل حسابها من القائمة.','Send it so the helper registers herself, then activate her from the list.'],inact:['غير مفعّلة','Inactive'],inactN:['مساعدات بانتظار التفعيل','Helpers awaiting activation'],badcode:['رابط التسجيل غير صالح.','Invalid registration link.'],
+nothing:['لا يوجد مبلغ مستحق للتصفية في هذا الشهر.','Nothing due to settle this month.'],delinv:['حذف هذه الفاتورة نهائيًا؟','Delete this invoice permanently?'],noimg:['لا توجد صورة لهذه الفاتورة.','This invoice has no image.'],
+renewJ:['تجديد رابط التسجيل (يُبطل القديم)','Renew registration link (invalidates the old one)'],renewJq:['تجديد رابط التسجيل؟ الرابط القديم سيتوقف.','Renew the registration link? The old one will stop working.'],
+e_many:['وصلت للحد الأقصى. انتظري مراجعة المالك.','Limit reached. Please wait for the owner to review.'],e_date:['التاريخ غير صحيح.','Invalid date.'],e_amt:['المبلغ غير صحيح.','Invalid amount.']};
 let L=localStorage.lang||'ar';const t=k=>(T[k]||[k,k])[L=='ar'?0:1];const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Number(n).toFixed(2)+' '+t('cur');const sum=a=>a.reduce((x,y)=>x+Number(y),0);
 const rt=()=>[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
-const COL=['#5f7050','#b8923a','#b5654a','#4f7f7a','#8a6f4e','#7a5c7a'];const today=()=>new Date().toISOString().slice(0,10);
+const COL=['#5f7050','#b8923a','#b5654a','#4f7f7a','#8a6f4e','#7a5c7a'];const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
 const S={month:today().slice(0,7),tab:'inv',v:'dash',open:null,fs:'',fw:'',pn:{},in:false};const W={};
 const toast=m=>{const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),6000)};
 const once=async f=>{if(S.busy)return;S.busy=1;try{await f()}finally{S.busy=0}};
@@ -83,12 +90,14 @@ async function route(){const q=new URLSearchParams(location.search),w=q.get('w')
 function goOwner(){if(location.search)return location.href=location.pathname;S.in?owner():loginView()}
 function goHelper(){const w=new URLSearchParams(location.search).get('w')||localStorage.hw;w?worker(w):helperEntry()}
 function helperEntry(m){S.re=()=>helperEntry(m);shell(`<h3>${t('helperAcc')}</h3>${m?`<div class="n">${esc(m)}</div>`:''}<input id="hc" placeholder="${t('hcode')}"><button class="b" onclick="hopen()">${t('open')}</button><p class="m">${t('hint')}</p>`)}
-function hopen(){const k=($('#hc').value.match(/[0-9a-f]{32}/i)||[])[0];k?worker(k.toLowerCase()):helperEntry(t('nohelp'))}
+function hopen(){const v=$('#hc').value.trim();const w=(v.match(/[?&]w=([0-9a-f]{32})/i)||v.match(/([0-9a-f]{32})/i)||[])[1],j=(v.match(/[?&]j=([0-9a-f]+)/i)||v.match(/^([0-9a-f]{12})$/i)||[])[1];
+ w?worker(w.toLowerCase()):j?joinView(j):helperEntry(t('nohelp'))}
 async function joinView(c){c=String(c).replace(/[^0-9a-f]/gi,'');S.re=()=>joinView(c);const{data}=await sb.rpc('hh_join_info',{p_code:c});if(!data)return helperEntry(t('badcode'));
  shell(`<h3>${t('joinT')}</h3><div class="m">${t('joinTo')}: <b>${esc(data.name)}</b></div><input id="jn" placeholder="${t('name')}"><input id="jp" placeholder="${t('phone')}"><button class="b" onclick="reg('${c}')">${t('reg')}</button>`)}
-const reg=c=>once(async()=>{const n=$('#jn').value.trim();if(!n)return;const{data,error}=await sb.rpc('hh_join',{p_code:c,p_name:n,p_phone:$('#jp').value});if(error)return alert(error.message);localStorage.hw=data;history.replaceState(null,'',location.pathname);worker(data)});
+const reg=c=>once(async()=>{const n=$('#jn').value.trim();if(!n)return;const{data,error}=await sb.rpc('hh_join',{p_code:c,p_name:n,p_phone:$('#jp').value});if(error)return alert(em(error.message));localStorage.hw=data;history.replaceState(null,'',location.pathname);worker(data)});
 /* ---------- Helper (private link) ---------- */
-async function worker(tok){tok=((String(tok).match(/[0-9a-f]{32}/i)||[''])[0]).toLowerCase();W.tok=tok;S.re=()=>worker(tok);const{data}=await sb.rpc('hh_worker_info',{p_token:tok});
+async function worker(tok){tok=((String(tok).match(/[0-9a-f]{32}/i)||[''])[0]).toLowerCase();W.tok=tok;S.re=()=>worker(tok);const{data,error}=await sb.rpc('hh_worker_info',{p_token:tok});
+ if(error)return helperEntry(error.message);
  if(!data){localStorage.removeItem('hw');return helperEntry(t('nohelp'))}
  W.d=data;localStorage.hw=tok;
  if(data.active===false)return page(`<main><h2>${esc(data.worker)}</h2><div class="n">${t('wait')}</div><button class="b" onclick="worker('${tok}')">${t('refresh')}</button></main>`);
@@ -113,7 +122,7 @@ function edit(id){const i=W.d.invoices.find(x=>x.id==id);W.edit=id;W.img=null;fo
 async function submit(force){if(W.busy)return;const am=+$('#am').value;if(!(am>0))return;W.busy=1;
  const a={p_token:W.tok,p_store:$('#st').value,p_amount:am,p_date:$('#dt').value||today(),p_source:$('#src').value};
  const{error}=W.edit?await sb.rpc('hh_worker_update',{...a,p_id:W.edit}):await sb.rpc('hh_worker_add',{...a,p_image:W.img,p_force:!!force});
- W.busy=0;if(error){if(/duplicate/.test(error.message)){if(confirm(t('dup')))return submit(true)}else alert(error.message);return}
+ W.busy=0;if(error){if(/duplicate/.test(error.message)){if(confirm(t('dup')))return submit(true)}else alert(em(error.message));return}
  W.img=null;W.edit=null;worker(W.tok)}
 
 /* ---------- Owner ---------- */
@@ -129,11 +138,13 @@ sb.auth.onAuthStateChange(ev=>{if(ev=='PASSWORD_RECOVERY')S.rec=1});
 const nm=m=>{const d=new Date(m+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()+1);return d.toISOString().slice(0,10)};
 function calc(w){const inv=S.inv.filter(i=>i.worker_id==w);const due=sum(inv.filter(i=>i.pay_source=='own'&&['approved','paid'].includes(i.status)).map(i=>i.amount));
  const paid=sum(S.pay.filter(p=>p.worker_id==w).map(p=>p.amount));return{inv,due,paid,left:Math.max(0,due-paid),tot:sum(inv.map(i=>i.amount))}}
-async function dash(){S.start=S.month+'-01';S.end=nm(S.month);
+async function dash(){try{await dash0()}catch(e){page(`<main><div class="n">${esc(e.message||e)}</div><button class="b" onclick="dash()">${t('refresh')}</button></main>`)}}
+async function dash0(){S.start=S.month+'-01';S.end=nm(S.month);
  const[w,i,p,n,h]=await Promise.all([sb.from('hh_workers').select('*').order('created_at'),
  sb.from('hh_invoices').select('id,worker_id,store,amount,inv_date,pay_source,status,owner_note').gte('inv_date',S.start).lt('inv_date',S.end).order('inv_date',{ascending:false}),
- sb.from('hh_payments').select('*').eq('month',S.month),sb.from('hh_invoices').select('worker_id').eq('status','pending'),sb.from('hh_homes').select('name,join_code').limit(1)]);
- S.w=w.data||[];S.inv=i.data||[];S.pay=p.data||[];const H=(h.data&&h.data[0])||{};S.hname=H.name||'';S.join=H.join_code||'';S.pn={};(n.data||[]).forEach(r=>S.pn[r.worker_id]=(S.pn[r.worker_id]||0)+1);
+ sb.from('hh_payments').select('*').eq('month',S.month),sb.from('hh_invoices').select('worker_id,inv_date').eq('status','pending'),sb.from('hh_homes').select('name,join_code').limit(1)]);
+ const er=[w,i,p,n].find(r=>r.error);if(er)throw new Error(er.error.message);
+ S.w=w.data||[];S.inv=i.data||[];S.pay=p.data||[];const H=(h.data&&h.data[0])||{};S.hname=H.name||'';S.join=H.join_code||'';S.pn={};(n.data||[]).forEach(r=>S.pn[r.worker_id]=(S.pn[r.worker_id]||0)+1);S.pm=((n.data||[]).map(r=>r.inv_date).sort().pop()||'').slice(0,7);
  const P=sum(Object.values(S.pn));if(S.lp!=null&&P>S.lp)toast(t('newbn'));S.lp=P;view()}
 function view(){S.re=view;({dash:list,detail,add:addv,set:setv})[S.v]()}
 const mi=()=>`<input type="month" value="${S.month}" onchange="S.month=this.value;dash()">`;
@@ -144,16 +155,16 @@ const sm=cs=>`<div class="grid"><div class="card"><div class="m">${t('total')}</
 const back=()=>`<button onclick="S.v='dash';view()">${L=='ar'?'→':'←'} ${t('back')}</button>`;
 const invCard=(i,sn)=>{const n=S.w.findIndex(x=>x.id==i.worker_id);return`<div class="card" style="--c:${COL[Math.max(n,0)%6]}"><div class="r"><b>${money(i.amount)}</b><span class="s ${i.status}">${t('s_'+i.status)}</span></div>
  <div class="m">${sn&&S.w[n]?`<b>${esc(S.w[n].name)}</b> · `:''}${esc(i.store||'')} · ${i.inv_date} · ${t(i.pay_source)}</div>${i.owner_note?`<div class="n">${esc(i.owner_note)}</div>`:''}
- <button onclick="show('${i.id}')">${t('img')}</button>${i.status=='pending'?`<button onclick="rv('${i.id}','approved')">${t('appr')}</button><button onclick="rv('${i.id}','revision')">${t('rev')}</button>`:''}</div>`};
+ <button onclick="show('${i.id}')">${t('img')}</button>${i.status=='pending'?`<button onclick="rv('${i.id}','approved')">${t('appr')}</button><button onclick="rv('${i.id}','revision')">${t('rev')}</button>`:''}${i.status!='paid'?`<button class="x" onclick="deli('${i.id}')">${t('del')}</button>`:''}</div>`};
 function list(){const cs=S.w.map(x=>calc(x.id)),P=sum(Object.values(S.pn)),IN=S.w.filter(x=>!x.active).length,
  jc=S.join?`<div class="card"><p class="m">${t('joinD')}</p><button style="width:100%" onclick="cp('${location.origin+location.pathname}?j=${S.join}')">${t('joinLink')}</button></div>`:'';
  const f=S.inv.filter(i=>(!S.fw||i.worker_id==S.fw)&&(!S.fs||i.status==S.fs));
  const body=S.tab=='inv'?`<div class="grid"><select onchange="S.fw=this.value;view()"><option value="">${t('tHelp')}: ${t('all')}</option>${S.w.map(x=>`<option value="${x.id}" ${S.fw==x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>
  <select onchange="S.fs=this.value;view()"><option value="">${t('all')}</option>${['pending','approved','revision','paid'].map(s=>`<option value="${s}" ${S.fs==s?'selected':''}>${t('s_'+s)}</option>`).join('')}</select></div>${f.map(i=>invCard(i,1)).join('')||`<p class="m">${t('noinv')}</p>`}`
- :jc+S.w.map((x,n)=>{const c=cs[n],p=S.pn[x.id]||0;return`<div class="card r" style="--c:${COL[n%6]};cursor:pointer" onclick="S.open='${x.id}';S.v='detail';view();scrollTo(0,0)"><b>${esc(x.name)}</b>
- <span>${x.active?'':`<span class="s">${t('inact')}</span> `}${p?`<span class="s pending">${t('newinv')} (${p})</span>`:''}${c.due>0&&c.left<=0?` <span class="ok">${t('settled')}</span>`:''}</span></div>`}).join('');
+ :jc+S.w.map((x,n)=>{const c=cs[n],p=S.pn[x.id]||0;return`<div class="card r" style="--c:${COL[n%6]};cursor:pointer;position:relative" onclick="S.open='${x.id}';S.v='detail';view();scrollTo(0,0)"><b>${esc(x.name)}</b>
+ <span>${x.active?'':`<span class="s">${t('inact')}</span> `}${p?`<span class="s pending">${t('newinv')} (${p})</span>`:''}${c.due>0&&c.left<=0?` <span class="ok">${t('settled')}</span>`:''}</span><span class="kb" aria-label="menu" onclick="event.stopPropagation();km('${x.id}')">&#8942;</span><div class="menu" id="m${x.id}" onclick="event.stopPropagation()"><button onclick="cpw('${x.id}')">${t('link')}</button><button onclick="renew('${x.id}')">${t('renew')}</button><button onclick="tog('${x.id}',${!x.active})">${x.active?t('stop'):t('resume')}</button><button onclick="pay('${x.id}')">${t('pay')}</button><button class="x" onclick="delw('${x.id}')">${t('del')}</button></div></div>`}).join('');
  page(`<main><div class="r"><h3 style="margin:6px 0">${esc(S.hname||t('app'))}</h3><span><button class="b" style="width:auto" onclick="S.v='add';view()">${t('addh')}</button> <button onclick="S.v='set';view()">${t('sett')}</button></span></div>
- ${P?`<div class="n">${t('newbn')} (${P})</div>`:''}${IN?`<div class="n">${t('inactN')} (${IN})</div>`:''}${mi()}${sm(cs)}
+ ${P?`<div class="n" style="cursor:pointer" onclick="goPend()">${t('newbn')} (${P})</div>`:''}${IN?`<div class="n">${t('inactN')} (${IN})</div>`:''}${mi()}${sm(cs)}
  <div class="r" style="margin:10px 0"><button class="tab ${S.tab=='inv'?'on':''}" onclick="S.tab='inv';view()">${t('tInv')}</button><button class="tab ${S.tab=='help'?'on':''}" onclick="S.tab='help';view()">${t('tHelp')}${P?` (${P})`:''}</button></div>${body}</main>`)}
 function detail(){const n=S.w.findIndex(x=>x.id==S.open),x=S.w[n];if(!x){S.v='dash';return list()}
  const c=calc(x.id),base=location.origin+location.pathname;
@@ -168,6 +179,7 @@ function setv(){page(`<main>${back()}<h3>${t('sett')}</h3>
  <div class="card"><b>${t('sSettle')}</b> (${S.month})<p class="m">${t('sSettleD')}</p><button class="b" onclick="settle()">${t('sSettle')}</button></div>
  <div class="card"><button style="width:100%" onclick="csv()">${t('sCsv')}</button></div>
  <div class="card"><b>${t('sPw')}</b><input id="np" type="password" placeholder="${t('sPw2')}"><button class="b" onclick="chpw()">${t('sPw')}</button><button style="width:100%" onclick="reset()">${t('sReset')}</button></div>
+ <div class="card"><b>${t('joinLink')}</b><p class="m">${t('joinD')}</p><button style="width:100%" onclick="renewJ()">${t('renewJ')}</button></div>
  <div class="card"><button class="x" style="width:100%" onclick="logout()">${t('logout')}</button></div></main>`)}
 const cp=async u=>{try{await navigator.clipboard.writeText(u)}catch(e){prompt('',u)}alert(t('copied'))};
 const addw=()=>once(async()=>{const n=$('#wn').value.trim();if(!n)return;const{error}=await sb.from('hh_workers').insert({home_id:S.home,name:n,phone:$('#wp').value,note:$('#wo').value,token:rt()});if(error)return alert(error.message);S.v='dash';S.tab='help';await dash()});
@@ -176,20 +188,29 @@ const tog=(id,a)=>once(async()=>{await sb.from('hh_workers').update({active:a}).
 const delw=id=>once(async()=>{if(!confirm(t('delq')))return;await sb.from('hh_payments').delete().eq('worker_id',id);await sb.from('hh_invoices').delete().eq('worker_id',id);
  const{error}=await sb.from('hh_workers').delete().eq('id',id);if(error)return alert(error.message);S.open=null;S.v='dash';S.tab='help';dash()});
 const rv=(id,s)=>once(async()=>{let n=null;if(s=='revision'){n=prompt(t('onote'));if(n===null)return}await sb.from('hh_invoices').update({status:s,owner_note:n}).eq('id',id);dash()});
-async function show(id){const{data}=await sb.from('hh_invoices').select('image').eq('id',id).single();if(!data||!data.image)return;$('#oi').src=data.image;$('#ov').style.display='flex'}
+async function show(id){const{data}=await sb.from('hh_invoices').select('image').eq('id',id).single();if(!data||!data.image)return alert(t('noimg'));$('#oi').src=data.image;$('#ov').style.display='flex'}
 const pay=wid=>once(async()=>{const r=calc(wid).left;if(r<=0)return alert(t('settled'));const a=+prompt(t('payq')+' — '+t('left')+': '+r.toFixed(2),r.toFixed(2));if(!(a>0))return;if(a>r+0.005)return alert(t('over'));
  const mt=prompt(t('method'),'')||'';const{error}=await sb.from('hh_payments').insert({home_id:S.home,worker_id:wid,month:S.month,amount:a,method:mt,paid_at:today()});if(error)return alert(error.message);
  if(a>=r-0.005)await sb.from('hh_invoices').update({status:'paid'}).eq('worker_id',wid).eq('status','approved').eq('pay_source','own').gte('inv_date',S.start).lt('inv_date',S.end);dash()});
-const settle=()=>once(async()=>{if(!confirm(t('sSettleQ')))return;const rows=S.w.map(x=>({x,c:calc(x.id)})).filter(r=>r.c.left>0.005);
- if(rows.length){const{error}=await sb.from('hh_payments').insert(rows.map(r=>({home_id:S.home,worker_id:r.x.id,month:S.month,amount:r.c.left,method:'settlement',paid_at:today()})));if(error)return alert(error.message)}
- await sb.from('hh_invoices').update({status:'paid'}).eq('status','approved').eq('pay_source','own').gte('inv_date',S.start).lt('inv_date',S.end);alert(t('done'));dash()});
+const settle=()=>once(async()=>{const rows=S.w.map(x=>({x,c:calc(x.id)})).filter(r=>r.c.left>0.005);if(!rows.length)return alert(t('nothing'));const tot=sum(rows.map(r=>r.c.left));
+ if(!confirm(t('sSettleQ')+'\n'+rows.map(r=>r.x.name+': '+money(r.c.left)).join('\n')+'\n'+t('total')+': '+money(tot)))return;
+ let e=(await sb.from('hh_payments').insert(rows.map(r=>({home_id:S.home,worker_id:r.x.id,month:S.month,amount:r.c.left,method:'settlement',paid_at:today()})))).error;if(e)return alert(e.message);
+ e=(await sb.from('hh_invoices').update({status:'paid'}).eq('status','approved').eq('pay_source','own').gte('inv_date',S.start).lt('inv_date',S.end)).error;if(e)return alert(e.message);
+ alert(t('done')+': '+money(tot));S.v='dash';S.tab='help';dash()});
 const savehn=()=>once(async()=>{const v=$('#hn2').value.trim();await sb.from('hh_homes').update({name:v}).eq('id',S.home);S.hname=v;alert(t('done'))});
 const chpw=()=>once(async()=>{const p=$('#np').value;if(p.length<6)return alert(t('sPw2'));const{error}=await sb.auth.updateUser({password:p});alert(error?error.message:t('done'))});
 const reset=()=>once(async()=>{const{data:{user}}=await sb.auth.getUser();const{error}=await sb.auth.resetPasswordForEmail(user.email,{redirectTo:location.origin+location.pathname});alert(error?error.message:t('done'))});
 function csv(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',wn=id=>(S.w.find(x=>x.id==id)||{}).name||'';
  const rows=[['Helper','Date','Store','Amount','Paid with','Status'],...S.inv.map(i=>[wn(i.worker_id),i.inv_date,i.store,i.amount,i.pay_source,i.status]),[],['Payments','Date','Method','Amount'],...S.pay.map(p=>[wn(p.worker_id),p.paid_at,p.method,p.amount])];
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}));a.download='statement-'+S.month+'.csv';a.click()}
-setInterval(()=>{if(S.home&&S.in&&['dash','detail'].includes(S.v)&&!S.busy&&!/INPUT|SELECT/.test(document.activeElement.tagName))dash()},30000);
+const em=m=>/too_many/.test(m)?t('e_many'):/bad_date/.test(m)?t('e_date'):/bad_amount/.test(m)?t('e_amt'):/bad_code/.test(m)?t('badcode'):m;
+const km=id=>{const m=document.getElementById('m'+id),on=m.classList.contains('on');document.querySelectorAll('.menu.on').forEach(e=>e.classList.remove('on'));if(!on)m.classList.add('on')};
+document.addEventListener('click',()=>document.querySelectorAll('.menu.on').forEach(e=>e.classList.remove('on')));
+const cpw=id=>cp(location.origin+location.pathname+'?w='+S.w.find(x=>x.id==id).token);
+const goPend=()=>{if(S.pm)S.month=S.pm;S.tab='inv';S.fs='pending';S.fw='';S.v='dash';dash()};
+const deli=id=>once(async()=>{if(!confirm(t('delinv')))return;const{error}=await sb.from('hh_invoices').delete().eq('id',id);if(error)return alert(error.message);dash()});
+const renewJ=()=>once(async()=>{if(!confirm(t('renewJq')))return;const c=rt().slice(0,12);const{error}=await sb.from('hh_homes').update({join_code:c}).eq('id',S.home);if(error)return alert(error.message);S.join=c;alert(t('done'))});
+setInterval(()=>{if(S.home&&S.in&&['dash','detail'].includes(S.v)&&!S.busy&&!document.querySelector('.menu.on')&&!/INPUT|SELECT/.test(document.activeElement.tagName))dash()},30000);
 document.documentElement.dir=L=='ar'?'rtl':'ltr';document.documentElement.lang=L;route();
 </script>
 </body>
