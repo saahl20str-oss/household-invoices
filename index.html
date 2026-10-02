@@ -24,13 +24,17 @@ button{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid var(--
 .toast{position:fixed;bottom:20px;inset-inline:16px;background:var(--g);color:#fff;padding:12px;border-radius:12px;text-align:center;z-index:20;font-weight:700}
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:9}#ov img{max-width:96%;max-height:92%}
 .prev{max-width:100%;max-height:200px;border-radius:8px}
-.hero{position:relative;min-height:calc(100vh - 58px);overflow:hidden}
-.hero svg{position:absolute;inset:0;width:100%;height:100%;filter:blur(4px);transform:scale(1.04)}
-.hero .tx{position:relative;max-width:480px;margin:auto;padding:60px 16px;text-align:center}
-.hero h1{font-size:30px;margin:0 0 8px}.hero p{color:#444;margin:0 0 18px}
-.rc{animation:rc 7s linear infinite;transform-box:fill-box}.gl{animation:gl 3s ease-in-out infinite alternate}.hs{animation:hv 6s ease-in-out infinite alternate}
-@keyframes rc{0%{transform:translate(0,0);opacity:0}15%,85%{opacity:.95}100%{transform:translate(var(--dx),var(--dy));opacity:0}}
-@keyframes gl{from{opacity:.3}to{opacity:1}}@keyframes hv{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+header.tr{position:absolute;inset-inline:0;top:0;background:transparent;border:0;justify-content:flex-end;z-index:6}
+header.tr button{background:rgba(255,255,255,.16);color:#fff;border-color:rgba(255,255,255,.65)}
+.hero{position:relative;min-height:100vh;overflow:hidden;background:#14213a center/cover}
+.hero svg{position:absolute;inset:0;width:100%;height:100%;filter:blur(1.2px);animation:kb 40s ease-in-out infinite alternate}
+.hero.ph svg{display:none}.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(8,15,30,.6),rgba(8,15,30,.2) 45%,rgba(8,15,30,.65))}
+.hero .tx{position:relative;z-index:2;min-height:100vh;max-width:480px;margin:auto;padding:70px 20px;display:flex;flex-direction:column;justify-content:center;text-align:center;color:#fff}
+.hero h1{font-size:40px;margin:0 0 10px;letter-spacing:.5px}.hero p{margin:0 0 26px;color:#f1ece0;font-size:17px;line-height:1.7}
+.hb{width:100%;padding:16px;font-size:18px;border-radius:14px;margin:8px 0}.hb.p{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.hb.o{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.75);color:#fff;backdrop-filter:blur(4px)}
+.lt{animation:lt 4s ease-in-out infinite alternate}.sh{animation:sh 5s ease-in-out infinite alternate}.cl{animation:cl 60s linear infinite alternate}.tw{animation:lt 3s ease-in-out infinite alternate}
+@keyframes lt{from{opacity:.78}to{opacity:1}}@keyframes sh{from{transform:translateX(-10px)}to{transform:translateX(12px)}}@keyframes cl{to{transform:translateX(150px)}}@keyframes kb{from{transform:scale(1)}to{transform:scale(1.07)}}
 </style>
 </head>
 <body>
@@ -40,8 +44,8 @@ button{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid var(--
 const SB_URL='https://naareclascgwdjlopjru.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hYXJlY2xhc2Nnd2RqbG9wanJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4NzUwNTcsImV4cCI6MjEwNjQ1MTA1N30.K2vN0d-ZnuuS_hofWKXrU7zh5WTnPY0eMnQBrfzgZ7M';
 const sb=supabase.createClient(SB_URL,SB_KEY);
-const T={app:['فواتير المنزل','Household Invoices'],ownerAcc:['حساب المالك','Owner'],helperAcc:['حساب المساعدة','Helper'],logout:['خروج','Log out'],
-h1:['فواتير المنزل بلا تعقيد','Household bills, made simple'],h2:['المساعدة تصوّر الفاتورة، وأنت تراجعها، وتُصفّى الحسابات بوضوح.','The helper snaps the receipt, you review it, and accounts settle clearly.'],start:['ابدأ كمالك','Start as owner'],
+const T={app:['فواتير المنزل','Household Invoices'],ownerAcc:['حساب المالك','Owner'],helperAcc:['حساب المساعدة المنزلية','Home Helper Account'],logout:['خروج','Log out'],
+h2:['سجّل مشتريات المساعدة المنزلية، راجعها، وصفِّ الحساب في مكان واحد.','Record, review and settle your household purchases in one place.'],
 login:['تسجيل الدخول','Log in'],signup:['إنشاء حساب للمنزل','Create home account'],email:['البريد الإلكتروني','Email'],pass:['كلمة المرور','Password'],homename:['اسم المنزل (اختياري)','Home name (optional)'],confirm:['تم إنشاء الحساب. أكّد بريدك ثم سجّل الدخول.','Account created. Confirm your email, then log in.'],
 hcode:['الصق رابط المساعدة أو رمزها','Paste the helper link or code'],open:['فتح','Open'],nohelp:['لا يوجد حساب مساعدة بهذا الرابط. يجب أن ينشئ المالك حساب المنزل ويضيفها أولًا.','No helper account found. The owner must create the home account and add her first.'],
 tInv:['الفواتير','Invoices'],tHelp:['المساعدات','Helpers'],addh:['إضافة مساعدة','Add helper'],sett:['الإعدادات','Settings'],back:['رجوع','Back'],
@@ -55,7 +59,10 @@ cur:['درهم','AED'],settled:['تمت التصفية','Settled'],copied:['تم
 delq:['حذف المساعدة وجميع فواتيرها ودفعاتها نهائيًا؟','Permanently delete this helper with all her invoices and payments?'],
 sName:['اسم المنزل','Home name'],sSettle:['تصفية حساب الشهر','Settle this month'],sSettleD:['يسجّل دفع المتبقي لكل مساعدة ويغلق فواتيرها المقبولة.','Pays each helper her remaining amount and closes her approved invoices.'],sSettleQ:['تأكيد تصفية حساب الشهر لكل المساعدات؟','Settle this month for all helpers?'],
 sCsv:['تصدير كشف الشهر (Excel)','Export month statement (Excel)'],sPw:['تغيير كلمة المرور','Change password'],sPw2:['كلمة مرور جديدة (6 أحرف على الأقل)','New password (min 6 chars)'],sReset:['إرسال رابط إعادة تعيين كلمة المرور إلى بريدي','Email me a password reset link'],done:['تم','Done'],
-newbn:['فواتير جديدة بانتظار مراجعتك','New invoices awaiting your review'],over:['المبلغ أكبر من المتبقي','Amount exceeds the remaining'],payq:['المبلغ الذي تدفعه للمساعدة (دفعة منك وليست فاتورة)','Amount you pay the helper (a payment, not an invoice)'],method:['طريقة الدفع (نقدًا/تحويل)','Method (cash/transfer)']};
+newbn:['فواتير جديدة بانتظار مراجعتك','New invoices awaiting your review'],over:['المبلغ أكبر من المتبقي','Amount exceeds the remaining'],payq:['المبلغ الذي تدفعه للمساعدة (دفعة منك وليست فاتورة)','Amount you pay the helper (a payment, not an invoice)'],method:['طريقة الدفع (نقدًا/تحويل)','Method (cash/transfer)'],
+hint:['إن لم يكن لديك رابط، اطلبي من المالك رابط التسجيل.','No link yet? Ask the owner for the registration link.'],joinT:['تسجيل مساعدة جديدة','Helper registration'],joinTo:['الانضمام إلى منزل','Joining home'],reg:['تسجيل','Register'],
+wait:['تم استلام طلبك. بانتظار تفعيل المالك لحسابك.','Request received. Waiting for the owner to activate your account.'],refresh:['تحديث','Refresh'],joinLink:['نسخ رابط تسجيل المساعدة','Copy helper registration link'],
+joinD:['أرسله للمساعدة لتسجّل بياناتها بنفسها، ثم فعّل حسابها من القائمة.','Send it so the helper registers herself, then activate her from the list.'],inact:['غير مفعّلة','Inactive'],inactN:['مساعدات بانتظار التفعيل','Helpers awaiting activation'],badcode:['رابط التسجيل غير صالح.','Invalid registration link.']};
 let L=localStorage.lang||'ar';const t=k=>(T[k]||[k,k])[L=='ar'?0:1];const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Number(n).toFixed(2)+' '+t('cur');const sum=a=>a.reduce((x,y)=>x+Number(y),0);
@@ -65,26 +72,46 @@ const S={month:today().slice(0,7),tab:'inv',v:'dash',open:null,fs:'',fw:'',pn:{}
 const toast=m=>{const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),6000)};
 const once=async f=>{if(S.busy)return;S.busy=1;try{await f()}finally{S.busy=0}};
 function setLang(l){L=l;localStorage.lang=l;document.documentElement.lang=l;document.documentElement.dir=l=='ar'?'rtl':'ltr';S.re?S.re():route()}
-const hdr=()=>`<header><b>${t('app')}</b><span><button onclick="goOwner()">${t('ownerAcc')}</button> <button onclick="goHelper()">${t('helperAcc')}</button> <button onclick="setLang(L=='ar'?'en':'ar')">${L=='ar'?'EN':'عربي'}</button>${S.in?` <button onclick="logout()">${t('logout')}</button>`:''}</span></header>`;
-const page=h=>{$('#app').innerHTML=hdr()+h};
-const SVG=`<svg viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbf3dc"/><stop offset="1" stop-color="#fff"/></linearGradient></defs><rect width="400" height="700" fill="url(#sk)"/>
-<g class="hs"><polygon points="70,430 200,320 330,430" fill="#b8923a"/><rect x="90" y="430" width="220" height="170" fill="#e9dcc0"/><rect x="178" y="500" width="44" height="100" rx="4" fill="#8a6d2b"/><rect x="112" y="460" width="48" height="44" fill="#C9A84C" class="gl"/><rect x="240" y="460" width="48" height="44" fill="#C9A84C" class="gl" style="animation-delay:1.5s"/></g>
-<g transform="translate(20,590)"><g class="rc" style="--dx:170px;--dy:-60px"><rect width="34" height="48" rx="4" fill="#fff" stroke="#C9A84C"/><path d="M7 14h20M7 24h20M7 34h12" stroke="#C9A84C"/></g></g>
-<g transform="translate(340,260)"><g class="rc" style="--dx:-140px;--dy:210px;animation-delay:2.3s"><rect width="34" height="48" rx="4" fill="#fff" stroke="#C9A84C"/><path d="M7 14h20M7 24h20M7 34h12" stroke="#C9A84C"/></g></g>
-<g transform="translate(50,180)"><g class="rc" style="--dx:140px;--dy:270px;animation-delay:4.6s"><rect width="34" height="48" rx="4" fill="#fff" stroke="#C9A84C"/><path d="M7 14h20M7 24h20M7 34h12" stroke="#C9A84C"/></g></g></svg>`;
-const shell=i=>page(`<div class="hero">${SVG}<div class="tx"><div class="card" style="text-align:start;background:#fffe">${i}</div></div></div>`);
-function landing(){S.re=landing;page(`<div class="hero">${SVG}<div class="tx" style="padding-top:120px"><h1>${t('h1')}</h1><p>${t('h2')}</p><button class="b" onclick="loginView()">${t('start')}</button></div></div>`)}
-async function route(){const w=new URLSearchParams(location.search).get('w');const{data:{session}}=await sb.auth.getSession();S.in=!!session;
- if(w)return worker(w);session?owner():landing()}
+const hdr=tr=>`<header class="${tr?'tr':''}">${tr?'':`<b>${t('app')}</b>`}<span><button onclick="setLang(L=='ar'?'en':'ar')">${L=='ar'?'EN':'عربي'}</button>${S.in?` <button onclick="logout()">${t('logout')}</button>`:''}</span></header>`;
+const page=(h,tr)=>{$('#app').innerHTML=hdr(tr)+h;if(tr)bgphoto()};
+function bgphoto(){const i=new Image();i.onload=()=>document.querySelectorAll('.hero').forEach(h=>{h.style.backgroundImage='url(house.jpg)';h.classList.add('ph')});i.src='house.jpg'}
+function scene(){const p=innerWidth<innerHeight;return`<svg viewBox="${p?'470 0 660 900':'0 0 1600 900'}" preserveAspectRatio="xMidYMax slice"><defs>
+<linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14213a"/><stop offset=".45" stop-color="#5a6a8e"/><stop offset=".72" stop-color="#e6ae85"/><stop offset="1" stop-color="#f7d9ae"/></linearGradient>
+<radialGradient id="sun"><stop offset="0" stop-color="#fff3d1" stop-opacity=".85"/><stop offset="1" stop-color="#fff3d1" stop-opacity="0"/></radialGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe2a3"/><stop offset="1" stop-color="#f0a24a"/></linearGradient>
+<linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#27493a"/><stop offset="1" stop-color="#0d1d16"/></linearGradient>
+<linearGradient id="wd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5723f"/><stop offset="1" stop-color="#6b4423"/></linearGradient>
+<linearGradient id="pl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8be6dc"/><stop offset="1" stop-color="#1d8f9a"/></linearGradient>
+<g id="pm"><path d="M0 0Q10-90-5-180" stroke="#3b2a1a" stroke-width="9" fill="none"/><g stroke="#1f4d35" stroke-width="7" fill="none" stroke-linecap="round"><path d="M-5-180Q-60-200-90-160"/><path d="M-5-180Q-40-230-85-220"/><path d="M-5-180Q10-235 60-225"/><path d="M-5-180Q50-200 80-155"/><path d="M-5-180Q0-220-25-245"/></g></g></defs>
+<rect width="1600" height="900" fill="url(#sk)"/><circle cx="800" cy="610" r="400" fill="url(#sun)"/>
+<g fill="#fff" class="tw"><circle cx="260" cy="90" r="2"/><circle cx="520" cy="150" r="1.6"/><circle cx="930" cy="70" r="2"/><circle cx="1240" cy="130" r="1.8"/><circle cx="1450" cy="60" r="2"/><circle cx="700" cy="200" r="1.4"/></g>
+<g class="cl" fill="#fff" opacity=".16"><ellipse cx="380" cy="230" rx="170" ry="22"/><ellipse cx="1180" cy="170" rx="210" ry="26"/></g>
+<path d="M0 600Q300 520 600 590T1200 575T1600 555V700H0Z" fill="#3a4a66" opacity=".75"/><path d="M0 640Q400 585 800 630T1600 610V720H0Z" fill="#2b3a50"/><rect y="640" width="1600" height="260" fill="url(#gr)"/>
+<use href="#pm" transform="translate(470 655)"/><use href="#pm" transform="translate(1150 655) scale(.85)"/>
+<ellipse cx="810" cy="668" rx="370" ry="12" fill="#000" opacity=".35"/><rect x="500" y="650" width="620" height="14" fill="#cfc7b8"/>
+<rect x="560" y="520" width="480" height="130" fill="#ebe7df"/><rect x="585" y="545" width="300" height="105" fill="url(#gl)" class="lt"/><path d="M660 545v105M735 545v105M810 545v105" stroke="#3a3f47" stroke-width="5"/>
+<rect x="905" y="540" width="120" height="110" fill="url(#wd)"/><path d="M925 540v110M950 540v110M975 540v110M1000 540v110" stroke="#4d3118" stroke-width="2" opacity=".5"/>
+<rect x="700" y="420" width="340" height="100" fill="#f6f3ec"/><rect x="725" y="442" width="230" height="56" fill="url(#gl)" class="lt" style="animation-delay:1.2s"/><path d="M782 442v56M840 442v56M897 442v56" stroke="#3a3f47" stroke-width="4"/>
+<rect x="540" y="508" width="520" height="14" fill="#2a2e35"/><rect x="684" y="408" width="372" height="14" fill="#2a2e35"/><rect x="540" y="522" width="520" height="8" fill="#000" opacity=".18"/>
+<ellipse cx="740" cy="692" rx="270" ry="20" fill="#ffd58a" opacity=".25" class="lt"/><rect x="552" y="680" width="436" height="6" fill="#d8d0c0"/><rect x="560" y="686" width="420" height="42" rx="4" fill="url(#pl)"/>
+<g class="sh" stroke="#fff" opacity=".5" stroke-width="2"><path d="M590 700h80M700 712h110M830 698h90"/></g>
+<ellipse cx="520" cy="656" rx="46" ry="20" fill="#1d3b2c"/><ellipse cx="1090" cy="656" rx="50" ry="20" fill="#1d3b2c"/></svg>`}
+const shell=i=>page(`<div class="hero">${scene()}<div class="tx"><div class="card" style="text-align:start;background:#fffffff2;color:#222">${i}<button style="width:100%" onclick="landing()">${t('back')}</button></div></div></div>`,1);
+function landing(){S.re=landing;page(`<div class="hero">${scene()}<div class="tx"><h1>${t('app')}</h1><p>${t('h2')}</p><button class="hb p" onclick="goOwner()">${t('ownerAcc')}</button><button class="hb o" onclick="goHelper()">${t('helperAcc')}</button></div></div>`,1)}
+async function route(){const q=new URLSearchParams(location.search),w=q.get('w'),j=q.get('j');const{data:{session}}=await sb.auth.getSession();S.in=!!session;
+ if(w)return worker(w);if(j)return joinView(j);session?owner():landing()}
 function goOwner(){if(location.search)return location.href=location.pathname;S.in?owner():loginView()}
 function goHelper(){const w=new URLSearchParams(location.search).get('w')||localStorage.hw;w?worker(w):helperEntry()}
-function helperEntry(m){S.re=()=>helperEntry(m);shell(`<h3>${t('helperAcc')}</h3>${m?`<div class="n">${esc(m)}</div>`:''}<input id="hc" placeholder="${t('hcode')}"><button class="b" onclick="hopen()">${t('open')}</button>`)}
+function helperEntry(m){S.re=()=>helperEntry(m);shell(`<h3>${t('helperAcc')}</h3>${m?`<div class="n">${esc(m)}</div>`:''}<input id="hc" placeholder="${t('hcode')}"><button class="b" onclick="hopen()">${t('open')}</button><p class="m">${t('hint')}</p>`)}
 function hopen(){const k=($('#hc').value.match(/[0-9a-f]{32}/i)||[])[0];k?worker(k.toLowerCase()):helperEntry(t('nohelp'))}
-
+async function joinView(c){c=String(c).replace(/[^0-9a-f]/gi,'');S.re=()=>joinView(c);const{data}=await sb.rpc('hh_join_info',{p_code:c});if(!data)return helperEntry(t('badcode'));
+ shell(`<h3>${t('joinT')}</h3><div class="m">${t('joinTo')}: <b>${esc(data.name)}</b></div><input id="jn" placeholder="${t('name')}"><input id="jp" placeholder="${t('phone')}"><button class="b" onclick="reg('${c}')">${t('reg')}</button>`)}
+const reg=c=>once(async()=>{const n=$('#jn').value.trim();if(!n)return;const{data,error}=await sb.rpc('hh_join',{p_code:c,p_name:n,p_phone:$('#jp').value});if(error)return alert(error.message);localStorage.hw=data;history.replaceState(null,'',location.pathname);worker(data)});
 /* ---------- Helper (private link) ---------- */
-async function worker(tok){W.tok=tok;S.re=()=>worker(tok);const{data}=await sb.rpc('hh_worker_info',{p_token:tok});
+async function worker(tok){tok=((String(tok).match(/[0-9a-f]{32}/i)||[''])[0]).toLowerCase();W.tok=tok;S.re=()=>worker(tok);const{data}=await sb.rpc('hh_worker_info',{p_token:tok});
  if(!data){localStorage.removeItem('hw');return helperEntry(t('nohelp'))}
  W.d=data;localStorage.hw=tok;
+ if(data.active===false)return page(`<main><h2>${esc(data.worker)}</h2><div class="n">${t('wait')}</div><button class="b" onclick="worker('${tok}')">${t('refresh')}</button></main>`);
  page(`<main><h2>${esc(data.worker)}</h2><div class="card"><button class="b" onclick="$('#f').click()">${t('addinv')}</button>
  <input id="f" type="file" accept="image/*" hidden onchange="pick(this)"><div id="form"></div></div>
  ${data.invoices.map(i=>`<div class="card"><div class="r"><b>${money(i.amount)}</b><span class="s ${i.status}">${t('s_'+i.status)}</span></div>
@@ -125,8 +152,8 @@ function calc(w){const inv=S.inv.filter(i=>i.worker_id==w);const due=sum(inv.fil
 async function dash(){S.start=S.month+'-01';S.end=nm(S.month);
  const[w,i,p,n,h]=await Promise.all([sb.from('hh_workers').select('*').order('created_at'),
  sb.from('hh_invoices').select('id,worker_id,store,amount,inv_date,pay_source,status,owner_note').gte('inv_date',S.start).lt('inv_date',S.end).order('inv_date',{ascending:false}),
- sb.from('hh_payments').select('*').eq('month',S.month),sb.from('hh_invoices').select('worker_id').eq('status','pending'),sb.from('hh_homes').select('name').limit(1)]);
- S.w=w.data||[];S.inv=i.data||[];S.pay=p.data||[];S.hname=(h.data&&h.data[0]&&h.data[0].name)||'';S.pn={};(n.data||[]).forEach(r=>S.pn[r.worker_id]=(S.pn[r.worker_id]||0)+1);
+ sb.from('hh_payments').select('*').eq('month',S.month),sb.from('hh_invoices').select('worker_id').eq('status','pending'),sb.from('hh_homes').select('name,join_code').limit(1)]);
+ S.w=w.data||[];S.inv=i.data||[];S.pay=p.data||[];const H=(h.data&&h.data[0])||{};S.hname=H.name||'';S.join=H.join_code||'';S.pn={};(n.data||[]).forEach(r=>S.pn[r.worker_id]=(S.pn[r.worker_id]||0)+1);
  const P=sum(Object.values(S.pn));if(S.lp!=null&&P>S.lp)toast(t('newbn'));S.lp=P;view()}
 function view(){S.re=view;({dash:list,detail,add:addv,set:setv})[S.v]()}
 const mi=()=>`<input type="month" value="${S.month}" onchange="S.month=this.value;dash()">`;
@@ -138,14 +165,15 @@ const back=()=>`<button onclick="S.v='dash';view()">${L=='ar'?'→':'←'} ${t('
 const invCard=(i,sn)=>{const n=S.w.findIndex(x=>x.id==i.worker_id);return`<div class="card" style="--c:${COL[Math.max(n,0)%6]}"><div class="r"><b>${money(i.amount)}</b><span class="s ${i.status}">${t('s_'+i.status)}</span></div>
  <div class="m">${sn&&S.w[n]?`<b>${esc(S.w[n].name)}</b> · `:''}${esc(i.store||'')} · ${i.inv_date} · ${t(i.pay_source)}</div>${i.owner_note?`<div class="n">${esc(i.owner_note)}</div>`:''}
  <button onclick="show('${i.id}')">${t('img')}</button>${i.status=='pending'?`<button onclick="rv('${i.id}','approved')">${t('appr')}</button><button onclick="rv('${i.id}','revision')">${t('rev')}</button>`:''}</div>`};
-function list(){const cs=S.w.map(x=>calc(x.id)),P=sum(Object.values(S.pn));
+function list(){const cs=S.w.map(x=>calc(x.id)),P=sum(Object.values(S.pn)),IN=S.w.filter(x=>!x.active).length,
+ jc=S.join?`<div class="card"><p class="m">${t('joinD')}</p><button style="width:100%" onclick="cp('${location.origin+location.pathname}?j=${S.join}')">${t('joinLink')}</button></div>`:'';
  const f=S.inv.filter(i=>(!S.fw||i.worker_id==S.fw)&&(!S.fs||i.status==S.fs));
  const body=S.tab=='inv'?`<div class="grid"><select onchange="S.fw=this.value;view()"><option value="">${t('tHelp')}: ${t('all')}</option>${S.w.map(x=>`<option value="${x.id}" ${S.fw==x.id?'selected':''}>${esc(x.name)}</option>`).join('')}</select>
  <select onchange="S.fs=this.value;view()"><option value="">${t('all')}</option>${['pending','approved','revision','paid'].map(s=>`<option value="${s}" ${S.fs==s?'selected':''}>${t('s_'+s)}</option>`).join('')}</select></div>${f.map(i=>invCard(i,1)).join('')||`<p class="m">${t('noinv')}</p>`}`
- :S.w.map((x,n)=>{const c=cs[n],p=S.pn[x.id]||0;return`<div class="card r" style="--c:${COL[n%6]};cursor:pointer" onclick="S.open='${x.id}';S.v='detail';view();scrollTo(0,0)"><b>${esc(x.name)}${x.active?'':' ('+t('stop')+')'}</b>
- <span>${p?`<span class="s pending">${t('newinv')} (${p})</span>`:''}${c.due>0&&c.left<=0?` <span class="ok">${t('settled')}</span>`:''}</span></div>`}).join('');
+ :jc+S.w.map((x,n)=>{const c=cs[n],p=S.pn[x.id]||0;return`<div class="card r" style="--c:${COL[n%6]};cursor:pointer" onclick="S.open='${x.id}';S.v='detail';view();scrollTo(0,0)"><b>${esc(x.name)}</b>
+ <span>${x.active?'':`<span class="s">${t('inact')}</span> `}${p?`<span class="s pending">${t('newinv')} (${p})</span>`:''}${c.due>0&&c.left<=0?` <span class="ok">${t('settled')}</span>`:''}</span></div>`}).join('');
  page(`<main><div class="r"><h3 style="margin:6px 0">${esc(S.hname||t('app'))}</h3><span><button class="b" style="width:auto" onclick="S.v='add';view()">${t('addh')}</button> <button onclick="S.v='set';view()">${t('sett')}</button></span></div>
- ${P?`<div class="n">${t('newbn')} (${P})</div>`:''}${mi()}${sm(cs)}
+ ${P?`<div class="n">${t('newbn')} (${P})</div>`:''}${IN?`<div class="n">${t('inactN')} (${IN})</div>`:''}${mi()}${sm(cs)}
  <div class="r" style="margin:10px 0"><button class="tab ${S.tab=='inv'?'on':''}" onclick="S.tab='inv';view()">${t('tInv')}</button><button class="tab ${S.tab=='help'?'on':''}" onclick="S.tab='help';view()">${t('tHelp')}${P?` (${P})`:''}</button></div>${body}</main>`)}
 function detail(){const n=S.w.findIndex(x=>x.id==S.open),x=S.w[n];if(!x){S.v='dash';return list()}
  const c=calc(x.id),base=location.origin+location.pathname;
