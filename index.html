@@ -6,20 +6,20 @@
 <title>فواتير المنزل | Household Invoices</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{--g:#C9A84C;--t:#222;--m:#777;--l:#e8e8e8}
-*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--t);font-family:Cairo,Tahoma,Arial,sans-serif}
-header{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;border-bottom:2px solid var(--g);background:#fff;position:sticky;top:0;z-index:5}
+:root{--g:#5f7050;--t:#2b2d26;--m:#6b6e5e;--l:#e4dcc5}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(#f6f2e6,#eee7d3) fixed;color:var(--t);font-family:Cairo,Tahoma,Arial,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid #d9d1b9;background:#f6f2e6ee;backdrop-filter:blur(6px);position:sticky;top:0;z-index:5}
 header button{padding:7px 11px;font-size:13px;margin:0}
 main{max-width:760px;margin:auto;padding:14px}
-.card{border:1px solid var(--l);border-radius:12px;padding:14px;margin:10px 0;background:#fff;border-inline-start:6px solid var(--c,var(--g))}
+.card{border:1px solid var(--l);border-radius:14px;padding:14px;margin:10px 0;background:#fffdf8;box-shadow:0 1px 4px rgba(80,70,40,.07);border-inline-start:6px solid var(--c,var(--g))}
 .r{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.m{color:var(--m);font-size:14px;margin:4px 0}.n{background:#fff6e0;border-radius:8px;padding:8px;margin:6px 0}
-input,select{width:100%;padding:12px;margin:5px 0;border:1px solid #ccc;border-radius:10px;font:inherit;background:#fff}
-button{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid var(--g);cursor:pointer;margin:3px 0;background:#fff;color:var(--t)}
-.b{background:var(--g);color:#fff;width:100%;font-weight:700}.x{border-color:#c0392b;color:#c0392b}
-.s{padding:3px 10px;border-radius:20px;font-size:13px;color:#fff;background:#999}.s.approved{background:#2E7D6B}.s.paid{background:#1b5e20}.s.revision{background:#c0392b}.s.pending{background:#d99a00}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid .card{margin:0;text-align:center}.big{font-size:20px;font-weight:700}
-.ok{background:#e6f4ea;color:#1b5e20;border-radius:8px;padding:4px 10px;font-size:14px}
+.m{color:var(--m);font-size:14px;margin:4px 0}.n{background:#f0e9cf;border-radius:8px;padding:8px;margin:6px 0}
+input,select{width:100%;padding:12px;margin:5px 0;border:1px solid #d6cdb2;border-radius:10px;font:inherit;background:#fffdf8}
+button{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid var(--g);cursor:pointer;margin:3px 0;background:#fffdf8;color:#3d4a33}
+.b{background:var(--g);color:#fff;width:100%;font-weight:700}.x{border-color:#b5543f;color:#b5543f}
+.s{padding:3px 10px;border-radius:20px;font-size:13px;color:#fff;background:#9a9684}.s.approved{background:#6f8c5e}.s.paid{background:#3f5a33}.s.revision{background:#b5543f}.s.pending{background:#c9a24a}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.grid .card{margin:0;text-align:center}.big{font-size:20px;font-weight:700;color:#3d4a33}
+.ok{background:#e1ead6;color:#3d5a33;border-radius:8px;padding:4px 10px;font-size:14px}
 .tab{flex:1;border-color:var(--l)}.tab.on{background:var(--g);color:#fff;border-color:var(--g)}
 .toast{position:fixed;bottom:20px;inset-inline:16px;background:var(--g);color:#fff;padding:12px;border-radius:12px;text-align:center;z-index:20;font-weight:700}
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:9}#ov img{max-width:96%;max-height:92%}
@@ -68,7 +68,7 @@ let L=localStorage.lang||'ar';const t=k=>(T[k]||[k,k])[L=='ar'?0:1];const $=s=>d
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Number(n).toFixed(2)+' '+t('cur');const sum=a=>a.reduce((x,y)=>x+Number(y),0);
 const rt=()=>[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
-const COL=['#C9A84C','#2E7D6B','#B5523B','#3F6BB5','#8A4FA3','#5C7A29'];const today=()=>new Date().toISOString().slice(0,10);
+const COL=['#5f7050','#b8923a','#b5654a','#4f7f7a','#8a6f4e','#7a5c7a'];const today=()=>new Date().toISOString().slice(0,10);
 const S={month:today().slice(0,7),tab:'inv',v:'dash',open:null,fs:'',fw:'',pn:{},in:false};const W={};
 const toast=m=>{const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),6000)};
 const once=async f=>{if(S.busy)return;S.busy=1;try{await f()}finally{S.busy=0}};
@@ -76,7 +76,7 @@ function setLang(l){L=l;localStorage.lang=l;document.documentElement.lang=l;docu
 const hdr=tr=>`<header class="${tr?'tr':''}">${tr?'':`<b>${t('app')}</b>`}<span><button onclick="setLang(L=='ar'?'en':'ar')">${L=='ar'?'EN':'عربي'}</button>${S.in?` <button onclick="logout()">${t('logout')}</button>`:''}</span></header>`;
 const page=(h,tr)=>{$('#app').innerHTML=hdr(tr)+h};
 function scene(){return''}
-const shell=i=>page(`<div class="hero">${scene()}<div class="tx"><div class="card" style="text-align:start;background:#fffffff2;color:#222">${i}<button style="width:100%" onclick="landing()">${t('back')}</button></div></div></div>`,1);
+const shell=i=>page(`<div class="hero">${scene()}<div class="tx"><div class="card" style="text-align:start;background:#fffdf8f2;color:#2b2d26">${i}<button style="width:100%" onclick="landing()">${t('back')}</button></div></div></div>`,1);
 function landing(){S.re=landing;page(`<div class="hero">${scene()}<div class="tx"><h1>${t('app')}</h1><p>${t('h2')}</p><button class="hb p" onclick="goOwner()">${t('ownerAcc')}</button><button class="hb o" onclick="goHelper()">${t('helperAcc')}</button></div></div>`,1)}
 async function route(){const q=new URLSearchParams(location.search),w=q.get('w'),j=q.get('j');const{data:{session}}=await sb.auth.getSession();S.in=!!session;
  if(w)return worker(w);if(j)return joinView(j);session?owner():landing()}
