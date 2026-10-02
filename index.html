@@ -35,13 +35,13 @@ workers:'العاملات',addw:'إضافة عاملة',name:'الاسم',phone:
 count:'عدد الفواتير',left:'المتبقي',det:'التفاصيل',pay:'تسجيل دفع',link:'نسخ الرابط',renew:'تجديد الرابط',stop:'إيقاف',resume:'تفعيل',del:'حذف',appr:'اعتماد',rev:'طلب تعديل',img:'الصورة',store:'المحل',amount:'المبلغ',date:'التاريخ',
 src:'طريقة الدفع',own:'من مالي الخاص',advance:'من العُهدة',owner:'دفعها صاحب البيت',s_pending:'بانتظار المراجعة',s_approved:'مقبولة',s_revision:'تحتاج تعديلًا',s_paid:'مدفوعة',
 addinv:'إضافة فاتورة',reading:'جارٍ قراءة المبلغ...',manual:'أدخل البيانات يدويًا',badlink:'الرابط غير صالح أو موقوف. اطلبي رابطًا جديدًا.',dup:'تبدو هذه الفاتورة مكررة. هل تريد حفظها؟',cur:'درهم',settled:'تمت التصفية',
-copied:'تم نسخ الرابط. أرسله للعاملة.',edit:'تعديل',onote:'ملاحظتك',method:'طريقة الدفع (نقدًا/تحويل)',noinv:'لا توجد فواتير',back:'رجوع',delq:'حذف العاملة؟',share:'رابط الموقع لأصحاب البيوت الآخرين',sharet:'انسخ رابط هذه الصفحة وأرسله لأي صاحب بيت ليسجّل حسابه ببياناته المنفصلة.'},
+copied:'تم نسخ الرابط. أرسله للعاملة.',edit:'تعديل',onote:'ملاحظتك',method:'طريقة الدفع (نقدًا/تحويل)',noinv:'لا توجد فواتير',newinv:'فاتورة جديدة',back:'رجوع',delq:'حذف العاملة؟',share:'رابط الموقع لأصحاب البيوت الآخرين',sharet:'انسخ رابط هذه الصفحة وأرسله لأي صاحب بيت ليسجّل حسابه ببياناته المنفصلة.'},
 en:{app:'Household Invoices',email:'Email',pass:'Password',login:'Log in',signup:'Create account',logout:'Log out',confirm:'Account created. Confirm your email, then log in.',
 workers:'Workers',addw:'Add worker',name:'Name',phone:'Phone (optional)',note:'Notes (optional)',save:'Save',month:'Month',total:'Total purchases',paid:'Paid',due:'Due to workers',pend:'Awaiting review',
 count:'Invoices',left:'Remaining',det:'Details',pay:'Record payment',link:'Copy link',renew:'Renew link',stop:'Suspend',resume:'Activate',del:'Delete',appr:'Approve',rev:'Request edit',img:'Image',store:'Store',amount:'Amount',date:'Date',
 src:'Paid with',own:'My own money',advance:'From advance',owner:'Paid by the owner',s_pending:'Awaiting review',s_approved:'Approved',s_revision:'Needs edit',s_paid:'Paid',
 addinv:'Add invoice',reading:'Reading the amount...',manual:'Enter the details manually',badlink:'This link is invalid or suspended. Ask for a new one.',dup:'This invoice looks like a duplicate. Save anyway?',cur:'AED',settled:'Settled',
-copied:'Link copied. Send it to the worker.',edit:'Edit',onote:'Your note',method:'Method (cash/transfer)',noinv:'No invoices',back:'Back',delq:'Delete this worker?',share:'Site link for other homeowners',sharet:'Copy this page link and send it to any homeowner; each one signs up with fully separate data.'}};
+copied:'Link copied. Send it to the worker.',edit:'Edit',onote:'Your note',method:'Method (cash/transfer)',noinv:'No invoices',newinv:'New invoice',back:'Back',delq:'Delete this worker?',share:'Site link for other homeowners',sharet:'Copy this page link and send it to any homeowner; each one signs up with fully separate data.'}};
 let L=localStorage.lang||'ar';const t=k=>T[L][k]||k;const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>Number(n).toFixed(2)+' '+t('cur');const sum=a=>a.reduce((x,y)=>x+Number(y),0);
@@ -94,31 +94,39 @@ function nm(m){const d=new Date(m+'-01T00:00:00Z');d.setUTCMonth(d.getUTCMonth()
 function calc(w){const inv=S.inv.filter(i=>i.worker_id==w);const due=sum(inv.filter(i=>i.pay_source=='own'&&['approved','paid'].includes(i.status)).map(i=>i.amount));
  const paid=sum(S.pay.filter(p=>p.worker_id==w).map(p=>p.amount));return{inv,due,paid,left:Math.max(0,due-paid),tot:sum(inv.map(i=>i.amount))}}
 async function dash(){S.start=S.month+'-01';S.end=nm(S.month);
- const[w,i,p]=await Promise.all([sb.from('hh_workers').select('*').order('created_at'),
+ const[w,i,p,n]=await Promise.all([sb.from('hh_workers').select('*').order('created_at'),
  sb.from('hh_invoices').select('id,worker_id,store,amount,inv_date,pay_source,status,owner_note').gte('inv_date',S.start).lt('inv_date',S.end).order('inv_date',{ascending:false}),
- sb.from('hh_payments').select('*').eq('month',S.month)]);
- S.w=w.data||[];S.inv=i.data||[];S.pay=p.data||[];
- const cs=S.w.map(x=>calc(x.id));const base=location.origin+location.pathname;
- render(`<input type=month value="${S.month}" onchange="S.month=this.value;S.open=null;dash()">
- <div class=grid><div class=card><div class=m>${t('total')}</div><div class=big>${money(sum(S.inv.map(x=>x.amount)))}</div></div>
+ sb.from('hh_payments').select('*').eq('month',S.month),
+ sb.from('hh_invoices').select('worker_id').eq('status','pending')]);
+ S.w=w.data||[];S.inv=i.data||[];S.pay=p.data||[];S.pn={};(n.data||[]).forEach(r=>S.pn[r.worker_id]=(S.pn[r.worker_id]||0)+1);
+ S.open?detail():list()}
+const mi=()=>`<input type=month value="${S.month}" onchange="S.month=this.value;dash()">`;
+const sm=cs=>`<div class=grid><div class=card><div class=m>${t('total')}</div><div class=big>${money(sum(S.inv.map(x=>x.amount)))}</div></div>
  <div class=card><div class=m>${t('paid')}</div><div class=big>${money(sum(S.pay.map(x=>x.amount)))}</div></div>
  <div class=card><div class=m>${t('due')}</div><div class=big>${money(sum(cs.map(c=>c.left)))}</div></div>
- <div class=card><div class=m>${t('pend')}</div><div class=big>${S.inv.filter(x=>x.status=='pending').length}</div></div></div>
- <h3>${t('workers')}</h3>${S.w.map((x,n)=>{const c=cs[n];return`<div class=card style="--c:${COL[n%6]}"><div class=r><b>${esc(x.name)}</b>${!x.active?`<span class=m>(${t('stop')})</span>`:''}${c.due>0&&c.left<=0?`<span class=ok>${t('settled')}</span>`:''}</div>
- <div class=m>${t('count')}: ${c.inv.length} · ${t('total')}: ${money(c.tot)} · ${t('left')}: ${money(c.left)}</div>
- <button class=g onclick="S.open='${x.id}';dash()">${t('det')}</button><button class=g onclick="pay('${x.id}')">${t('pay')}</button>
- <button class=g onclick="cp('${base}?w=${x.token}')">${t('link')}</button><button class=g onclick="renew('${x.id}')">${t('renew')}</button>
- <button class=g onclick="tog('${x.id}',${!x.active})">${x.active?t('stop'):t('resume')}</button><button class=x onclick="delw('${x.id}')">${t('del')}</button>
- ${S.open==x.id?`<hr>${c.inv.map(i=>`<div class=card><div class=r><b>${money(i.amount)}</b><span class="s ${i.status}">${t('s_'+i.status)}</span></div><div class=m>${esc(i.store||'')} · ${i.inv_date} · ${t(i.pay_source)}</div>${i.owner_note?`<div class=n>${esc(i.owner_note)}</div>`:''}
- <button class=g onclick="show('${i.id}')">${t('img')}</button>${i.status=='pending'||i.status=='revision'?`<button class=g onclick="rv('${i.id}','approved')">${t('appr')}</button><button class=g onclick="rv('${i.id}','revision')">${t('rev')}</button>`:''}</div>`).join('')||`<p class=m>${t('noinv')}</p>`}`:''}</div>`}).join('')}
+ <div class=card><div class=m>${t('pend')}</div><div class=big>${sum(Object.values(S.pn))}</div></div></div>`;
+function list(){const cs=S.w.map(x=>calc(x.id));const base=location.origin+location.pathname;
+ render(`${mi()}${sm(cs)}<h3>${t('workers')}</h3>${S.w.map((x,n)=>{const c=cs[n],p=S.pn[x.id]||0;
+ return`<div class="card r" style="--c:${COL[n%6]};cursor:pointer" onclick="S.open='${x.id}';dash();scrollTo(0,0)"><b>${esc(x.name)}${x.active?'':' ('+t('stop')+')'}</b>
+ <span>${p?`<span class="s pending">${t('newinv')} (${p})</span>`:''}${c.due>0&&c.left<=0?` <span class=ok>${t('settled')}</span>`:''}</span></div>`}).join('')}
  <div class=card><h3>${t('addw')}</h3><input id=wn placeholder="${t('name')}"><input id=wp placeholder="${t('phone')}"><input id=wo placeholder="${t('note')}"><button class=b onclick="addw()">${t('save')}</button></div>
  <div class=card><b>${t('share')}</b><p class=m>${t('sharet')}</p><button class=g onclick="cp('${base}')">${t('link')}</button></div>`,1)}
+function detail(){const n=S.w.findIndex(x=>x.id==S.open),x=S.w[n];if(!x){S.open=null;return list()}
+ const c=calc(x.id),base=location.origin+location.pathname;
+ render(`<button class=g onclick="S.open=null;dash()">${L=='ar'?'→':'←'} ${t('back')}</button>${mi()}
+ <div class=card style="--c:${COL[n%6]}"><div class=r><b>${esc(x.name)}</b>${c.due>0&&c.left<=0?`<span class=ok>${t('settled')}</span>`:''}</div>
+ <div class=m>${x.phone?esc(x.phone)+' · ':''}${t('count')}: ${c.inv.length} · ${t('total')}: ${money(c.tot)} · ${t('left')}: ${money(c.left)}</div>${x.note?`<div class=m>${esc(x.note)}</div>`:''}
+ <button class=g onclick="pay('${x.id}')">${t('pay')}</button><button class=g onclick="cp('${base}?w=${x.token}')">${t('link')}</button><button class=g onclick="renew('${x.id}')">${t('renew')}</button>
+ <button class=g onclick="tog('${x.id}',${!x.active})">${x.active?t('stop'):t('resume')}</button><button class=x onclick="delw('${x.id}')">${t('del')}</button></div>
+ ${c.inv.map(i=>`<div class=card style="--c:${COL[n%6]}"><div class=r><b>${money(i.amount)}</b><span class="s ${i.status}">${t('s_'+i.status)}</span></div><div class=m>${esc(i.store||'')} · ${i.inv_date} · ${t(i.pay_source)}</div>${i.owner_note?`<div class=n>${esc(i.owner_note)}</div>`:''}
+ <button class=g onclick="show('${i.id}')">${t('img')}</button>${i.status=='pending'||i.status=='revision'?`<button class=g onclick="rv('${i.id}','approved')">${t('appr')}</button><button class=g onclick="rv('${i.id}','revision')">${t('rev')}</button>`:''}</div>`).join('')||`<p class=m>${t('noinv')}</p>`}`,1)}
+setInterval(()=>{if(S.home&&!S.busy&&!/INPUT|SELECT/.test(document.activeElement.tagName))dash()},30000);
 const once=async f=>{if(S.busy)return;S.busy=1;try{await f()}finally{S.busy=0}};
 const cp=async u=>{try{await navigator.clipboard.writeText(u)}catch(e){prompt('',u)}alert(t('copied'))};
 const addw=()=>once(async()=>{const n=$('#wn').value.trim();if(!n)return;const{error}=await sb.from('hh_workers').insert({home_id:S.home,name:n,phone:$('#wp').value,note:$('#wo').value,token:rt()});if(error)return alert(error.message);dash()});
 const renew=id=>once(async()=>{await sb.from('hh_workers').update({token:rt()}).eq('id',id);dash()});
 const tog=(id,a)=>once(async()=>{await sb.from('hh_workers').update({active:a}).eq('id',id);dash()});
-const delw=id=>once(async()=>{if(!confirm(t('delq')))return;const{error}=await sb.from('hh_workers').delete().eq('id',id);if(error)alert('Has financial records / لها سجل مالي');dash()});
+const delw=id=>once(async()=>{if(!confirm(t('delq')))return;const{error}=await sb.from('hh_workers').delete().eq('id',id);if(error)alert('Has financial records / لها سجل مالي');else S.open=null;dash()});
 const rv=(id,s)=>once(async()=>{let n=null;if(s=='revision'){n=prompt(t('onote'));if(n===null)return}await sb.from('hh_invoices').update({status:s,owner_note:n}).eq('id',id);dash()});
 async function show(id){const{data}=await sb.from('hh_invoices').select('image').eq('id',id).single();if(!data||!data.image)return;$('#oi').src=data.image;$('#ov').style.display='flex'}
 const pay=wid=>once(async()=>{const r=calc(wid).left;const a=+prompt(t('amount'),r.toFixed(2));if(!(a>0))return;const mt=prompt(t('method'),'')||'';
