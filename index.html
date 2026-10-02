@@ -25,14 +25,15 @@ button{font:inherit;padding:12px 16px;border-radius:10px;border:1px solid var(--
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:9}#ov img{max-width:96%;max-height:92%}
 .prev{max-width:100%;max-height:200px;border-radius:8px}
 header.tr{position:absolute;inset-inline:0;top:0;background:transparent;border:0;justify-content:flex-end;z-index:6}
-header.tr button{background:rgba(255,255,255,.16);color:#fff;border-color:rgba(255,255,255,.65)}
-.hero{position:relative;min-height:100vh;overflow:hidden;background:#14213a center/cover}
-.hero svg{position:absolute;inset:0;width:100%;height:100%;filter:blur(1.2px);animation:kb 40s ease-in-out infinite alternate}
-.hero.ph svg{display:none}.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(8,15,30,.6),rgba(8,15,30,.2) 45%,rgba(8,15,30,.65))}
-.hero .tx{position:relative;z-index:2;min-height:100vh;max-width:480px;margin:auto;padding:70px 20px;display:flex;flex-direction:column;justify-content:center;text-align:center;color:#fff}
-.hero h1{font-size:40px;margin:0 0 10px;letter-spacing:.5px}.hero p{margin:0 0 26px;color:#f1ece0;font-size:17px;line-height:1.7}
-.hb{width:100%;padding:16px;font-size:18px;border-radius:14px;margin:8px 0}.hb.p{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
-.hb.o{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.75);color:#fff;backdrop-filter:blur(4px)}
+header.tr button{background:rgba(255,255,255,.65);color:#3d4a33;border-color:#5f7050}
+.hero{position:relative;min-height:100vh;overflow:hidden;background:#e6dfcb}
+.hero::before{content:"";position:absolute;inset:0;background:url(house.jpg) center bottom/cover no-repeat;animation:kb 30s ease-in-out infinite alternate}
+@media(orientation:portrait){.hero::before{background-size:100% auto;-webkit-mask-image:linear-gradient(transparent,#000 22%);mask-image:linear-gradient(transparent,#000 22%)}}
+.hero .tx{position:relative;z-index:2;min-height:100vh;max-width:440px;margin:auto;padding:70px 20px;display:flex;flex-direction:column;justify-content:center;text-align:center;color:#2b2d26}
+@media(min-aspect-ratio:1/1){.hero .tx{transform:translateX(9vw)}}
+.hero h1{font-size:40px;margin:0 0 10px}.hero p{margin:0 0 26px;color:#5b5e50;font-size:17px;line-height:1.7}
+.hb{width:100%;padding:16px;font-size:18px;border-radius:14px;margin:8px 0}.hb.p{background:#5f7050;border-color:#5f7050;color:#fff;font-weight:700}
+.hb.o{background:rgba(255,255,255,.6);border:1px solid #5f7050;color:#3d4a33;backdrop-filter:blur(4px)}
 .lt{animation:lt 4s ease-in-out infinite alternate}.sh{animation:sh 5s ease-in-out infinite alternate}.cl{animation:cl 60s linear infinite alternate}.tw{animation:lt 3s ease-in-out infinite alternate}
 @keyframes lt{from{opacity:.78}to{opacity:1}}@keyframes sh{from{transform:translateX(-10px)}to{transform:translateX(12px)}}@keyframes cl{to{transform:translateX(150px)}}@keyframes kb{from{transform:scale(1)}to{transform:scale(1.07)}}
 </style>
@@ -73,29 +74,8 @@ const toast=m=>{const d=document.createElement('div');d.className='toast';d.text
 const once=async f=>{if(S.busy)return;S.busy=1;try{await f()}finally{S.busy=0}};
 function setLang(l){L=l;localStorage.lang=l;document.documentElement.lang=l;document.documentElement.dir=l=='ar'?'rtl':'ltr';S.re?S.re():route()}
 const hdr=tr=>`<header class="${tr?'tr':''}">${tr?'':`<b>${t('app')}</b>`}<span><button onclick="setLang(L=='ar'?'en':'ar')">${L=='ar'?'EN':'عربي'}</button>${S.in?` <button onclick="logout()">${t('logout')}</button>`:''}</span></header>`;
-const page=(h,tr)=>{$('#app').innerHTML=hdr(tr)+h;if(tr)bgphoto()};
-function bgphoto(){const i=new Image();i.onload=()=>document.querySelectorAll('.hero').forEach(h=>{h.style.backgroundImage='url(house.jpg)';h.classList.add('ph')});i.src='house.jpg'}
-function scene(){const p=innerWidth<innerHeight;return`<svg viewBox="${p?'470 0 660 900':'0 0 1600 900'}" preserveAspectRatio="xMidYMax slice"><defs>
-<linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14213a"/><stop offset=".45" stop-color="#5a6a8e"/><stop offset=".72" stop-color="#e6ae85"/><stop offset="1" stop-color="#f7d9ae"/></linearGradient>
-<radialGradient id="sun"><stop offset="0" stop-color="#fff3d1" stop-opacity=".85"/><stop offset="1" stop-color="#fff3d1" stop-opacity="0"/></radialGradient>
-<linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe2a3"/><stop offset="1" stop-color="#f0a24a"/></linearGradient>
-<linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#27493a"/><stop offset="1" stop-color="#0d1d16"/></linearGradient>
-<linearGradient id="wd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a5723f"/><stop offset="1" stop-color="#6b4423"/></linearGradient>
-<linearGradient id="pl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8be6dc"/><stop offset="1" stop-color="#1d8f9a"/></linearGradient>
-<g id="pm"><path d="M0 0Q10-90-5-180" stroke="#3b2a1a" stroke-width="9" fill="none"/><g stroke="#1f4d35" stroke-width="7" fill="none" stroke-linecap="round"><path d="M-5-180Q-60-200-90-160"/><path d="M-5-180Q-40-230-85-220"/><path d="M-5-180Q10-235 60-225"/><path d="M-5-180Q50-200 80-155"/><path d="M-5-180Q0-220-25-245"/></g></g></defs>
-<rect width="1600" height="900" fill="url(#sk)"/><circle cx="800" cy="610" r="400" fill="url(#sun)"/>
-<g fill="#fff" class="tw"><circle cx="260" cy="90" r="2"/><circle cx="520" cy="150" r="1.6"/><circle cx="930" cy="70" r="2"/><circle cx="1240" cy="130" r="1.8"/><circle cx="1450" cy="60" r="2"/><circle cx="700" cy="200" r="1.4"/></g>
-<g class="cl" fill="#fff" opacity=".16"><ellipse cx="380" cy="230" rx="170" ry="22"/><ellipse cx="1180" cy="170" rx="210" ry="26"/></g>
-<path d="M0 600Q300 520 600 590T1200 575T1600 555V700H0Z" fill="#3a4a66" opacity=".75"/><path d="M0 640Q400 585 800 630T1600 610V720H0Z" fill="#2b3a50"/><rect y="640" width="1600" height="260" fill="url(#gr)"/>
-<use href="#pm" transform="translate(470 655)"/><use href="#pm" transform="translate(1150 655) scale(.85)"/>
-<ellipse cx="810" cy="668" rx="370" ry="12" fill="#000" opacity=".35"/><rect x="500" y="650" width="620" height="14" fill="#cfc7b8"/>
-<rect x="560" y="520" width="480" height="130" fill="#ebe7df"/><rect x="585" y="545" width="300" height="105" fill="url(#gl)" class="lt"/><path d="M660 545v105M735 545v105M810 545v105" stroke="#3a3f47" stroke-width="5"/>
-<rect x="905" y="540" width="120" height="110" fill="url(#wd)"/><path d="M925 540v110M950 540v110M975 540v110M1000 540v110" stroke="#4d3118" stroke-width="2" opacity=".5"/>
-<rect x="700" y="420" width="340" height="100" fill="#f6f3ec"/><rect x="725" y="442" width="230" height="56" fill="url(#gl)" class="lt" style="animation-delay:1.2s"/><path d="M782 442v56M840 442v56M897 442v56" stroke="#3a3f47" stroke-width="4"/>
-<rect x="540" y="508" width="520" height="14" fill="#2a2e35"/><rect x="684" y="408" width="372" height="14" fill="#2a2e35"/><rect x="540" y="522" width="520" height="8" fill="#000" opacity=".18"/>
-<ellipse cx="740" cy="692" rx="270" ry="20" fill="#ffd58a" opacity=".25" class="lt"/><rect x="552" y="680" width="436" height="6" fill="#d8d0c0"/><rect x="560" y="686" width="420" height="42" rx="4" fill="url(#pl)"/>
-<g class="sh" stroke="#fff" opacity=".5" stroke-width="2"><path d="M590 700h80M700 712h110M830 698h90"/></g>
-<ellipse cx="520" cy="656" rx="46" ry="20" fill="#1d3b2c"/><ellipse cx="1090" cy="656" rx="50" ry="20" fill="#1d3b2c"/></svg>`}
+const page=(h,tr)=>{$('#app').innerHTML=hdr(tr)+h};
+function scene(){return''}
 const shell=i=>page(`<div class="hero">${scene()}<div class="tx"><div class="card" style="text-align:start;background:#fffffff2;color:#222">${i}<button style="width:100%" onclick="landing()">${t('back')}</button></div></div></div>`,1);
 function landing(){S.re=landing;page(`<div class="hero">${scene()}<div class="tx"><h1>${t('app')}</h1><p>${t('h2')}</p><button class="hb p" onclick="goOwner()">${t('ownerAcc')}</button><button class="hb o" onclick="goHelper()">${t('helperAcc')}</button></div></div>`,1)}
 async function route(){const q=new URLSearchParams(location.search),w=q.get('w'),j=q.get('j');const{data:{session}}=await sb.auth.getSession();S.in=!!session;
